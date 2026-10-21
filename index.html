@@ -1,0 +1,2088 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Homework 7</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f0f8ff;
+      }
+      h1, h2, h3 { color: #2c3e50; }
+      p.subtitle { color: #555; }
+      .interactive-demo {
+        background-color: #e0f7fa;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 30px;
+      }
+      button {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-size: 16px;
+        border-radius: 5px;
+        margin: 5px 5px 5px 0;
+      }
+      button:hover { background-color: #2980b9; }
+      button:disabled { background-color: #95a5a6; cursor: default; }
+      button:disabled:hover { background-color: #95a5a6; }
+      .hidden { display: none; }
+      .math-formula {
+        font-family: "Times New Roman", Times, serif;
+        font-style: italic;
+        background-color: #f9f9f9;
+        padding: 8px 10px;
+        border-radius: 5px;
+        display: inline-block;
+      }
+      .question-section { margin-top: 15px; font-size: 18px; }
+      .feedback { margin-top: 10px; font-size: 17px; font-weight: bold; }
+      .feedback.correct { color: #1e8449; }
+      .feedback.incorrect { color: #c0392b; }
+      .calculation-steps {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 5px;
+      }
+      .step { margin-bottom: 10px; font-family: "Times New Roman", Times, serif; font-size: 17px; }
+      .result-display { font-size: 19px; font-weight: bold; margin-top: 15px; color: #1565c0; }
+      .quiz-section { margin-top: 15px; }
+      .quiz-section p.quiz-label { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
+      .quiz-input-row { margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
+      .quiz-input-row input[type="text"] {
+        width: 80px; padding: 4px 6px; font-size: 16px;
+        font-family: "Times New Roman", Times, serif;
+        border: 2px solid #ccc; border-radius: 4px; text-align: center;
+      }
+      .quiz-input-row input.correct { border-color: #1e8449; background-color: #e8f5e9; }
+      .quiz-input-row input.incorrect { border-color: #c0392b; background-color: #ffebee; }
+      .quiz-feedback { margin-top: 10px; font-size: 17px; font-weight: bold; }
+      .quiz-feedback.correct { color: #1e8449; }
+      .quiz-feedback.incorrect { color: #c0392b; }
+      .quiz-hint { margin-top: 8px; font-size: 15px; color: #555; background: #fff; border: 1px solid #ddd; padding: 8px; border-radius: 5px; }
+      .score-display { margin-top: 10px; font-size: 16px; color: #555; }
+
+      /* Matrices */
+      .matrix-container { display: inline-block; vertical-align: middle; margin: 10px 20px 10px 0; }
+      .matrix-label { font-weight: bold; font-size: 18px; margin-bottom: 5px; }
+      table.matrix-table { border-collapse: collapse; margin: 5px 0; }
+      table.matrix-table td {
+        border: 1px solid #ddd; padding: 8px 12px; text-align: center;
+        background-color: #fff; font-family: "Times New Roman", Times, serif;
+        font-size: 17px; min-width: 20px;
+      }
+      .quiz-matrix-input { border-collapse: collapse; margin: 5px 0; }
+      .quiz-matrix-input td { padding: 3px; }
+      .quiz-matrix-input input[type="text"] {
+        width: 60px; padding: 4px 6px; font-size: 16px;
+        font-family: "Times New Roman", Times, serif;
+        border: 2px solid #ccc; border-radius: 4px; text-align: center;
+      }
+      .quiz-matrix-input input.correct { border-color: #1e8449; background-color: #e8f5e9; }
+      .quiz-matrix-input input.incorrect { border-color: #c0392b; background-color: #ffebee; }
+
+      table.points-table { border-collapse: collapse; margin: 10px 0; background-color: #fff; }
+      table.points-table th, table.points-table td {
+        border: 1px solid #ddd; padding: 8px 14px; text-align: center;
+        font-family: "Times New Roman", Times, serif; font-size: 17px;
+      }
+      table.points-table th { background-color: #f0f0f0; }
+
+      /* Sub-tabs (Problem 1 / 2 / 3 internal tabs) */
+      .p1-tab-bar, .p2-tab-bar, .p3-tab-bar { display: flex; gap: 0; margin-top: 20px; flex-wrap: wrap; }
+      .p1-tab-bar button, .p2-tab-bar button, .p3-tab-bar button {
+        border-radius: 5px 5px 0 0; background-color: #bdc3c7;
+        font-size: 14px; padding: 10px 14px; margin: 0;
+      }
+      .p1-tab-bar button.active, .p2-tab-bar button.active, .p3-tab-bar button.active {
+        background-color: #3498db; font-weight: bold;
+      }
+      .p1-tab-content, .p2-tab-content, .p3-tab-content { display: none; }
+      .p1-tab-content.active, .p2-tab-content.active, .p3-tab-content.active { display: block; }
+
+      /* Main (homework-level) tabs */
+      .main-tab-bar { display: flex; gap: 0; margin-top: 10px; flex-wrap: wrap; }
+      .main-tab-bar button {
+        border-radius: 5px 5px 0 0; background-color: #7f8c8d; color: #fff;
+        font-size: 15px; padding: 12px 20px; margin: 0;
+      }
+      .main-tab-bar button.active { background-color: #2c3e50; font-weight: bold; }
+      .main-tab-content { display: none; }
+      .main-tab-content.active { display: block; }
+      .summary-box { background-color: #e0f7fa; padding: 25px; border-radius: 10px; margin-top: 0; }
+      .summary-grand-total { font-size: 28px; font-weight: bold; color: #1565c0; margin-bottom: 20px; }
+      .summary-row {
+        display: flex; justify-content: space-between; align-items: center;
+        background-color: #fff; border: 1px solid #ddd; border-radius: 6px;
+        padding: 12px 18px; margin-bottom: 10px; font-size: 17px;
+      }
+      .summary-row .score { font-weight: bold; color: #1e8449; }
+
+      /* Submission code generator */
+      .code-box { background-color: #fff; border: 2px dashed #1565c0; border-radius: 8px; padding: 18px; margin-top: 25px; }
+      .code-box h3 { margin-top: 0; color: #1565c0; }
+      .code-form-row { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+      .code-form-row input[type="text"] {
+        flex: 1; min-width: 180px; padding: 8px 10px; font-size: 15px;
+        border: 2px solid #ccc; border-radius: 5px;
+      }
+      .code-output-row { display: flex; gap: 8px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+      #submission-code-output {
+        flex: 1; min-width: 240px; padding: 10px; font-size: 15px;
+        font-family: "Courier New", monospace; font-weight: bold;
+        border: 2px solid #1e8449; border-radius: 5px; background-color: #e8f5e9;
+        color: #1b5e20; letter-spacing: 0.5px;
+      }
+      .copy-btn { background-color: #1e8449; }
+      .copy-btn:hover { background-color: #17663a; }
+      .code-note { font-size: 14px; color: #555; margin-top: 10px; }
+      .code-warning { font-size: 14px; color: #c0392b; margin-top: 8px; font-weight: bold; }
+      .resume-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
+      .resume-row input[type="text"] {
+        flex: 1; min-width: 220px; padding: 8px 10px; font-size: 15px;
+        border: 2px solid #ccc; border-radius: 5px; font-family: "Courier New", monospace;
+      }
+      .code-form-row input[readonly].locked {
+        background-color: #eceff1; color: #555; cursor: not-allowed; border-color: #b0bec5;
+      }
+      .identity-locked-note { font-size: 13px; color: #1565c0; margin-top: 6px; font-weight: bold; }
+      .unlock-btn { background-color: #b71c1c; margin-top: 10px; }
+      .unlock-btn:hover { background-color: #8e1616; }
+      .integrity-notice {
+        background-color: #eceff1; border: 1px solid #90a4ae; border-radius: 6px;
+        padding: 12px 16px; margin: 15px 0; font-size: 14px; color: #37474f;
+      }
+      .integrity-notice strong { color: #263238; }
+      .code-confirmation {
+        background-color: #e8f5e9; border: 2px solid #1e8449; border-radius: 8px;
+        padding: 14px 18px; margin-top: 12px;
+      }
+      .code-confirmation h4 { margin: 0 0 8px; color: #1b5e20; }
+      .code-confirmation table { border-collapse: collapse; width: 100%; }
+      .code-confirmation table td { padding: 3px 8px 3px 0; font-size: 14px; vertical-align: top; }
+      .code-confirmation table td.label { font-weight: bold; color: #1b5e20; white-space: nowrap; }
+      .code-confirmation .copy-status { margin-top: 8px; font-weight: bold; }
+      .code-confirmation .copy-status.copied { color: #1e8449; }
+      .code-confirmation .copy-status.manual { color: #b7950b; }
+      .code-confirmation .reminder { margin-top: 8px; font-style: italic; color: #37474f; }
+      .print-btn { background-color: #455a64; margin: 10px 0 20px; }
+      .print-btn:hover { background-color: #34495e; }
+      .print-header { display: none; }
+      .print-header h2 { margin: 0 0 8px; }
+      .csv-mode-row { margin: 10px 0; font-size: 14px; }
+      .csv-mode-row label { margin-right: 20px; cursor: pointer; }
+      .csv-summary-list { font-size: 14px; margin: 4px 0; }
+      @media print {
+        .no-print, .main-tab-bar, .code-box, .instructor-toggle, .instructor-panel,
+        #main-tab-p1, #main-tab-p2, #main-tab-p3,
+        p.subtitle, h1 { display: none !important; }
+        .print-header { display: block !important; }
+        .summary-box { border: none; box-shadow: none; padding: 0; }
+      }
+
+      /* Instructor decode panel */
+      .instructor-toggle {
+        margin-top: 25px; font-size: 14px; color: #777; cursor: pointer;
+        text-decoration: underline; display: inline-block;
+      }
+      .instructor-panel {
+        display: none; margin-top: 12px; background-color: #fdf6e3;
+        border: 2px dashed #b7950b; border-radius: 8px; padding: 18px;
+      }
+      .instructor-panel.open { display: block; }
+      .instructor-panel h3 { margin-top: 0; color: #7d6608; }
+      .instructor-panel textarea {
+        width: 100%; min-height: 100px; font-family: "Courier New", monospace;
+        font-size: 14px; padding: 8px; border: 2px solid #ccc; border-radius: 5px;
+        box-sizing: border-box;
+      }
+      table.decode-table { border-collapse: collapse; width: 100%; margin-top: 12px; background: #fff; }
+      table.decode-table th, table.decode-table td {
+        border: 1px solid #ddd; padding: 6px 10px; font-size: 14px; text-align: left;
+      }
+      table.decode-table th { background-color: #f2e6b8; }
+      table.decode-table tr.tampered { background-color: #ffebee; }
+      table.decode-table tr.tampered td.validity { color: #c0392b; font-weight: bold; }
+      table.decode-table td.validity { color: #1e8449; font-weight: bold; }
+
+      .decode-card { background: #fff; border: 2px solid #ccc; border-radius: 8px; padding: 12px 16px; margin: 12px 0; }
+      .decode-card.valid { border-color: #1e8449; }
+      .decode-card.expired { border-color: #b7950b; background-color: #fdf6e3; }
+      .decode-card.invalid { border-color: #c0392b; background-color: #ffebee; }
+      .decode-card-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; flex-wrap: wrap; gap: 8px; }
+      .decode-name { font-size: 17px; font-weight: bold; color: #263238; }
+      .decode-status-badge { font-size: 13px; font-weight: bold; padding: 2px 10px; border-radius: 12px; color: #fff; }
+      .decode-status-badge.valid { background-color: #1e8449; }
+      .decode-status-badge.expired { background-color: #b7950b; }
+      .decode-status-badge.invalid { background-color: #c0392b; }
+      table.decode-info-table { border-collapse: collapse; margin-bottom: 8px; }
+      table.decode-info-table td { padding: 2px 8px 2px 0; font-size: 14px; vertical-align: top; }
+      table.decode-info-table td.label { font-weight: bold; color: #455a64; white-space: nowrap; }
+      .decode-breakdown { font-size: 13px; color: #37474f; border-top: 1px dashed #ccc; padding-top: 6px; }
+      .decode-breakdown .breakdown-row { margin: 2px 0; }
+
+      /* Problem 3 - 2D Truss FEM diagram & step-by-step quiz */
+      .p3-sheet {
+        background:
+          linear-gradient(#dce6f0 1px, transparent 1px) 0 0/28px 28px,
+          linear-gradient(90deg, #dce6f0 1px, transparent 1px) 0 0/28px 28px,
+          #fbfdff;
+        border: 1px solid #cfd8dc;
+        padding: 10px;
+        margin: 10px 0;
+      }
+      .p3-sheet svg { display: block; width: 100%; height: auto; }
+      .p3-step-block {
+        background-color: #fff; border: 1px solid #ddd; border-radius: 6px;
+        padding: 14px 16px; margin-top: 16px;
+      }
+      .p3-step-block h3 { margin: 0 0 8px; font-size: 17px; color: #2c3e50; }
+      .p3-step-block .p3-step-intro { font-size: 15px; margin-bottom: 10px; }
+      .p3-input-panel {
+        background-color: #fff; border: 1px solid #ddd; border-radius: 6px;
+        padding: 16px 18px; margin: 10px 0; max-width: 620px;
+      }
+      .p3-field { margin-bottom: 14px; }
+      .p3-field label { display: block; font-weight: bold; font-size: 13px; color: #455a64; margin-bottom: 4px; }
+      .p3-field input, .p3-field select {
+        width: 100%; padding: 6px 8px; font-size: 14px; border: 1px solid #ccc;
+        border-radius: 4px; font-family: "Times New Roman", Times, serif; box-sizing: border-box;
+      }
+      .p3-hint { font-size: 12px; color: #777; margin-top: 3px; }
+      .p3-row2 { display: flex; gap: 16px; flex-wrap: wrap; }
+      .p3-row2 .p3-field { flex: 1; min-width: 160px; }
+      .p3-error {
+        margin-top: 10px; padding: 9px 10px; background-color: #FBE9E4; border: 1px solid #B5451B;
+        color: #B5451B; font-size: 13px; border-radius: 4px; display: none;
+      }
+      .p3-edit-bar { display: flex; justify-content: flex-start; gap: 8px; margin: 10px 0; }
+
+      /* Problem 2 / Problem 3 — part-section step layout (shared) */
+      .problem-box {
+        background-color: #fff; border: 1px solid #ddd; border-radius: 8px;
+        padding: 18px 20px; margin-bottom: 20px;
+      }
+      .given-table { border-collapse: collapse; margin: 12px 0; }
+      .given-table td { padding: 4px 14px 4px 0; font-family: "Times New Roman", Times, serif; font-size: 17px; }
+      .given-table td.val { font-weight: bold; }
+      .note-box {
+        background-color: #fff8e1; border: 1px solid #f0c36d; border-radius: 6px;
+        padding: 12px 16px; margin: 16px 0; font-size: 15px;
+      }
+      .part-section {
+        background-color: #ffffff; border-radius: 10px; padding: 4px 24px 24px 24px;
+        margin-top: 10px; margin-bottom: 30px; border: 1px solid #dbe9f5;
+      }
+      .part-header { display: flex; justify-content: space-between; align-items: center; }
+      .part-score { font-size: 15px; color: #1565c0; font-weight: bold; }
+      .eq-display { text-align: center; margin: 14px 0; }
+      .eq-display .math-formula { font-size: 18px; padding: 10px 16px; }
+      .part-section .step {
+        border: 1px solid #e0e0e0; border-radius: 8px; padding: 14px 18px;
+        margin: 16px 0 0; background: #fbfdff; font-family: inherit; font-size: inherit;
+      }
+      .step-title { font-weight: bold; font-size: 16px; color: #2c3e50; margin-bottom: 6px; }
+      .step-prompt { font-size: 16px; margin-bottom: 10px; }
+      .step-inputs { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-bottom: 8px; }
+      .input-group { display: flex; align-items: center; gap: 6px; }
+      .input-group label { font-family: "Times New Roman", Times, serif; font-size: 16px; }
+      .input-group input[type="text"] {
+        width: 150px; padding: 6px 8px; font-size: 15px;
+        font-family: "Times New Roman", Times, serif;
+        border: 2px solid #ccc; border-radius: 4px; text-align: center;
+      }
+      .input-group input.correct { border-color: #1e8449; background-color: #e8f5e9; }
+      .input-group input.incorrect { border-color: #c0392b; background-color: #ffebee; }
+      .input-group .units { font-size: 13px; color: #777; }
+      .part-section .hint { margin-top: 6px; font-size: 13px; color: #555; background: #fff; border: 1px solid #ddd; padding: 6px 10px; border-radius: 5px; }
+      .part-section .step.done { border-color: #1e8449; background: #f4fbf6; }
+      svg.diagram { display: block; margin: 10px auto; }
+      .diagram-caption { text-align: center; font-size: 14px; color: #555; }
+    
+      .fig-wrap { text-align:center; margin: 10px 0; }
+      .mat-note { font-family: "Times New Roman", Times, serif; font-size: 16px; }
+      table.disp-table { border-collapse: collapse; margin: 8px 0; background:#fff; }
+      table.disp-table th, table.disp-table td { border:1px solid #ddd; padding:5px 12px; text-align:center; font-family:"Times New Roman",Times,serif; font-size:16px; }
+      table.disp-table th { background:#f0f0f0; }
+      .check-btn { padding: 6px 16px; font-size: 14px; }
+      .input-group input[type="text"] { width: 120px; }
+      .step-inputs { row-gap: 8px; }
+      .need-list { margin: 6px 0 8px 20px; padding: 0; }
+      .need-list li { margin: 2px 0; }
+      .prec-line { margin: 6px 0 0; font-size: 14px; }
+      details.formula-sheet { margin: 10px 0 4px; border: 1px solid #b7c9dc; border-radius: 6px; background: #f7fbff; padding: 6px 14px; }
+      details.formula-sheet > summary { cursor: pointer; font-weight: bold; color: #1f4e79; padding: 4px 0; }
+      details.formula-sheet .sheet-reminder { font-size: 13px; color: #1565c0; margin: 6px 0; }
+      details.formula-sheet ul { margin: 6px 0 6px 20px; padding: 0; }
+      details.formula-sheet li { margin: 5px 0; }
+      details.reflection { margin: 8px 0 4px; border-left: 4px solid #9bb3c9; background: #f4f7fa; padding: 4px 12px; border-radius: 0 5px 5px 0; font-size: 14px; }
+      details.reflection > summary { cursor: pointer; font-weight: bold; color: #4a6076; }
+      details.reveal { margin: 6px 0 2px; font-size: 13px; }
+      details.reveal > summary { cursor: pointer; color: #8a5a00; font-weight: bold; }
+      details.reveal .reveal-body { margin-top: 4px; background: #fff8e1; border: 1px solid #f0d58a; padding: 6px 10px; border-radius: 5px; font-family: "Times New Roman", Times, serif; font-size: 15px; }
+      .part-intro { margin: 2px 0 12px; font-size: 15px; color: #444; }
+      @media print { details.formula-sheet:not([open]) > *:not(summary), details.reflection:not([open]) > *:not(summary) { display: block; } }
+      .csv-row { margin: 4px 0 6px; font-size: 12px; color: #555; }
+      .csv-btn { display:inline-block; background:#eef3f8; border:1px solid #9bb3c9; color:#1f4e79; border-radius:4px; padding:3px 10px; font-size:13px; cursor:pointer; margin-right:8px; }
+      .csv-btn:hover { background:#dde9f4; }
+      .feedback.info { color:#1565c0; }
+      .prec { font-size: 12px; color: #1565c0; font-family: Arial, sans-serif; }
+    </style>
+  </head>
+  <body>
+    <h1>Homework 7</h1>
+    <p class="subtitle">2-D elements: constant strain triangle and bilinear rectangle (Lecture 8). Complete the problems below. Your combined score is tracked on the Summary tab.</p>
+
+    <div class="main-tab-bar" id="main-tab-bar">
+      <button class="active" onclick="switchMainTab('summary')">Summary</button>
+      <button onclick="switchMainTab('p1')">Problem 1: Review</button>
+      <button onclick="switchMainTab('p2')">Problem 2: Constant Strain Triangle</button>
+      <button onclick="switchMainTab('p3')">Problem 3: Bilinear Element</button>
+    </div>
+
+    <div class="main-tab-content active" id="main-tab-summary">
+      <div class="summary-box">
+        <div class="print-header hidden" id="print-header">
+          <h2>Homework 7 — Score Summary</h2>
+          <p><strong>Name:</strong> <span id="print-header-name"></span> &nbsp;&nbsp; <strong>ID:</strong> <span id="print-header-id"></span></p>
+          <p><strong>Printed:</strong> <span id="print-header-date"></span></p>
+        </div>
+        <div class="summary-grand-total">Total Score: <span id="grand-total">0.0</span> / 60</div>
+        <button class="print-btn no-print" onclick="printSummary()">&#128424; Print / Save as PDF</button>
+        <div class="summary-row hidden" id="summary-baseline-row">
+          <span>Carried over from a resumed session</span>
+          <span class="score"><span id="summary-baseline-score">0.0</span></span>
+        </div>
+        <div class="summary-row">
+          <span>Problem 1: Review &mdash; [D], Equivalent Properties, Gauss Quadrature (max 8)</span>
+          <span class="score"><span id="summary-p1-score">0.0</span> / 8</span>
+        </div>
+        <div class="summary-row">
+          <span>Problem 2: Constant Strain Triangle &mdash; Single Element &amp; Two-CST Bracket (max 28)</span>
+          <span class="score"><span id="summary-p2-score">0.0</span> / 28</span>
+        </div>
+        <div class="summary-row">
+          <span>Problem 3: Bilinear Rectangular Element &mdash; Gauss Quadrature (max 24)</span>
+          <span class="score"><span id="summary-p3-score">0.0</span> / 24</span>
+        </div>
+        <p class="subtitle" style="margin-top: 20px;">Switch to the Problem 1, Problem 2, or Problem 3 tab above to work through the questions.</p>
+
+        <div class="integrity-notice">
+          <strong>Academic integrity notice:</strong> Submit only a code generated from your own completed assignment. Submission codes are checked for validity and may be reviewed against Canvas submission records. Altered, expired, or invalid codes may receive no credit pending instructor review.
+        </div>
+
+        <div class="code-box">
+          <h3>Get Your Submission Code</h3>
+          <p>If you're continuing a previous session, paste your earlier code below and click "Resume" first — it will restore your name, ID, and prior score as your starting point.</p>
+          <div class="resume-row">
+            <input type="text" id="resume-code-input" placeholder="Paste a previous code to resume...">
+            <button onclick="resumeFromCode()">Resume</button>
+          </div>
+          <p class="code-warning hidden" id="resume-warning-msg"></p>
+
+          <p>When you are finished, enter your info below (if not already filled in by resuming) and click "Generate Code." Copy the resulting code and paste it into the Canvas assignment for Homework 7 as your submission.</p>
+          <div class="code-form-row">
+            <input type="text" id="student-name-input" placeholder="Full name (as on Canvas)">
+            <input type="text" id="student-id-input" placeholder="Canvas login / email / student ID">
+          </div>
+          <button onclick="generateSubmissionCode()">Generate Code</button>
+          <div class="code-output-row hidden" id="code-output-row">
+            <input type="text" id="submission-code-output" readonly>
+            <button class="copy-btn" onclick="copySubmissionCode()">Copy</button>
+          </div>
+
+          <div class="code-confirmation hidden" id="code-confirmation">
+            <h4>&#10003; Code Generated</h4>
+            <table>
+              <tr><td class="label">Name:</td><td id="confirm-name"></td></tr>
+              <tr><td class="label">ID:</td><td id="confirm-id"></td></tr>
+              <tr><td class="label">Score:</td><td id="confirm-score"></td></tr>
+              <tr><td class="label">Generated:</td><td id="confirm-datetime"></td></tr>
+            </table>
+            <p class="copy-status" id="confirm-copy-status"></p>
+            <p class="reminder">Paste the entire code into the Canvas Homework 7 text-entry submission.</p>
+          </div>
+
+          <p class="code-note">The code encodes your name, ID, and the full score breakdown for every sub-tab (<span id="code-score-snapshot">0.0</span> / 60) with a tamper-check built in. Your submission code records the date and time it was generated. Generate a new code after making changes and immediately before submitting in Canvas. Submit the code before the Canvas due date. Keep a copy of your code until your grade is posted.</p>
+          <p class="identity-locked-note hidden" id="identity-locked-note">Name and ID are now locked for this session.</p>
+          <p class="code-warning hidden" id="code-warning-msg"></p>
+          <button class="unlock-btn" onclick="unlockIdentityAndReset()">Unlock Identity / Start Over</button>
+        </div>
+
+        <span class="instructor-toggle" id="instructor-toggle-link" onclick="toggleInstructorPanel()">Instructor tools (decode submission codes) &#9662;</span>
+        <div class="instructor-panel" id="instructor-panel">
+          <h3>Step 1: Decode Submission Codes</h3>
+          <p>Paste one or more student codes below (one per line — extra text on the line is ignored) and click "Decode" to recover name, ID, and score.</p>
+          <textarea id="decode-input" placeholder="Paste codes here, one per line..."></textarea>
+          <div style="margin-top: 10px;">
+            <button onclick="decodeSubmissionCodes()">Decode</button>
+          </div>
+          <div id="decode-results"></div>
+
+          <div id="csv-step" class="hidden" style="margin-top: 25px; border-top: 2px dashed #b7950b; padding-top: 15px;">
+            <h3>Step 2: Auto-fill Your Canvas Gradebook (optional)</h3>
+            <p>In Canvas, go to <strong>Grades → Export</strong> to download the current gradebook CSV. Upload it here — this tool will match each decoded student to a row by email / login ID (falling back to name) and fill in the score for the column you pick. Nothing is uploaded anywhere; the file is processed entirely in your browser.</p>
+            <input type="file" id="gradebook-csv-input" accept=".csv" onchange="handleGradebookCsvUpload(event)">
+            <div id="csv-column-picker" class="hidden" style="margin-top: 10px;">
+              <label for="csv-assignment-column">Assignment column to fill: </label>
+              <select id="csv-assignment-column"></select>
+              <div class="csv-mode-row">
+                <label><input type="radio" name="csv-fill-mode" value="overwrite" checked> Overwrite existing scores</label>
+                <label><input type="radio" name="csv-fill-mode" value="blank"> Only fill blank cells</label>
+              </div>
+              <button onclick="fillGradebookCsv()">Fill Scores &amp; Download</button>
+            </div>
+            <div id="csv-match-summary"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="main-tab-content" id="main-tab-p1">
+    <h1 id="p1-problem-title">Problem 1. Maximum score = 8 | Total score = <span id="p1-total-score">0.0</span></h1>
+    <div class="note-box"><strong>Precision:</strong> the required number of decimals is printed beside every answer box. Enter <em>at least</em> that many decimals; an answer is accepted when it is within &plusmn;1 in the last required digit of the exact value. Where a step asks for several numbers, a matrix, or a vector, an optional <strong>Upload CSV</strong> button lets you load them from a file (for example <code>np.savetxt('K.csv', K, delimiter=',')</code> in Python, or an Excel/MATLAB export) instead of typing; the boxes are filled with the file's values, and you still press <em>Check</em>.</div>
+    <div class="p1-tab-bar" id="p1-tab-bar">
+      <button class="active" onclick="p1SwitchTab('dps')">Plane Stress [D]</button>
+      <button onclick="p1SwitchTab('dpe')">Plane Strain [D]</button>
+      <button onclick="p1SwitchTab('eq')">Equivalent E*, &nu;*</button>
+      <button onclick="p1SwitchTab('gauss')">2-Point Gauss</button>
+    </div>
+
+    <div class="p1-tab-content active" id="p1-tab-dps">
+      <p class="subtitle">Lecture 6 constitutive matrices are reused unchanged in every 2-D element. Build the plane-stress matrix.</p>
+      <div class="interactive-demo"><p>A thin plate (free faces) has <span class="math-formula">E</span> = <span data-bind="p1_E1">?</span> ksi and <span class="math-formula">&nu;</span> = <span data-bind="p1_n1">?</span>.</p><div class="eq-display"><span class="math-formula">[D] = E/(1&minus;&nu;&sup2;) &middot; [ 1, &nu;, 0 ; &nu;, 1, 0 ; 0, 0, (1&minus;&nu;)/2 ]</span></div>
+      
+    <div class="part-section">
+      <div class="part-header"><h2>Question</h2><div class="part-score">Score: <span id="p1-score-dps">0.0</span> / <span id="p1-max-dps">0</span></div></div>
+      
+      <div class="step" id="p1-step-dps">
+        <div class="step-title">Step dps. Plane-stress [D] entries</div>
+        <div class="step-prompt">Compute the three distinct entries of [D] (note d<sub>22</sub> = d<sub>11</sub>, d<sub>21</sub> = d<sub>12</sub>).</div>
+        <div class="step-inputs"><div class="input-group"><label>d<sub>11</sub> =</label><input type="text" id="p1-dps-d11" autocomplete="off"><span class="units">ksi</span></div><div class="input-group"><label>d<sub>12</sub> =</label><input type="text" id="p1-dps-d12" autocomplete="off"><span class="units">ksi</span></div><div class="input-group"><label>d<sub>33</sub> =</label><input type="text" id="p1-dps-d33" autocomplete="off"><span class="units">ksi</span></div><button class="check-btn" onclick="HW.check('p1','dps')">Check</button></div>
+        <div class="feedback" id="p1-dps-fb"></div><div class="hint">Hint: d<sub>33</sub> = E/(2(1+&nu;)) = d<sub>11</sub>(1&minus;&nu;)/2.</div>
+      </div>
+    </div>
+      </div>
+    </div>
+    <div class="p1-tab-content" id="p1-tab-dpe">
+      <p class="subtitle">A long prismatic body restrained along its length (dam, tunnel, retaining wall) is a plane-strain problem.</p>
+      <div class="interactive-demo"><p>A long tunnel section has <span class="math-formula">E</span> = <span data-bind="p1_E2">?</span> ksi and <span class="math-formula">&nu;</span> = <span data-bind="p1_n2">?</span>.</p><div class="eq-display"><span class="math-formula">[D] = E/((1+&nu;)(1&minus;2&nu;)) &middot; [ 1&minus;&nu;, &nu;, 0 ; &nu;, 1&minus;&nu;, 0 ; 0, 0, (1&minus;2&nu;)/2 ]</span></div>
+      
+    <div class="part-section">
+      <div class="part-header"><h2>Question</h2><div class="part-score">Score: <span id="p1-score-dpe">0.0</span> / <span id="p1-max-dpe">0</span></div></div>
+      
+      <div class="step" id="p1-step-dpe">
+        <div class="step-title">Step dpe. Plane-strain [D] entries</div>
+        <div class="step-prompt">Compute d<sub>11</sub>, d<sub>12</sub>, d<sub>33</sub> for the plane-strain matrix.</div>
+        <div class="step-inputs"><div class="input-group"><label>d<sub>11</sub> =</label><input type="text" id="p1-dpe-d11" autocomplete="off"><span class="units">ksi</span></div><div class="input-group"><label>d<sub>12</sub> =</label><input type="text" id="p1-dpe-d12" autocomplete="off"><span class="units">ksi</span></div><div class="input-group"><label>d<sub>33</sub> =</label><input type="text" id="p1-dpe-d33" autocomplete="off"><span class="units">ksi</span></div><button class="check-btn" onclick="HW.check('p1','dpe')">Check</button></div>
+        <div class="feedback" id="p1-dpe-fb"></div><div class="hint">Hint: d<sub>33</sub> = E/(2(1+&nu;)) is the shear modulus G, the same in plane stress and plane strain.</div>
+      </div>
+    </div>
+      </div>
+    </div>
+    <div class="p1-tab-content" id="p1-tab-eq">
+      <p class="subtitle">Trick from Lecture 8: reuse a plane-stress code to mimic plane strain by substituting an effective modulus and Poisson's ratio.</p>
+      <div class="interactive-demo"><p>You must analyze a plane-<strong>strain</strong> problem with real properties <span class="math-formula">E</span> = <span data-bind="p1_E3">?</span> ksi and <span class="math-formula">&nu;</span> = <span data-bind="p1_n3">?</span>, but only have a plane-<strong>stress</strong> program.</p><div class="eq-display"><span class="math-formula">E* = E/(1&minus;&nu;&sup2;), &nbsp;&nbsp; &nu;* = &nu;/(1&minus;&nu;)</span></div>
+      
+    <div class="part-section">
+      <div class="part-header"><h2>Question</h2><div class="part-score">Score: <span id="p1-score-eq">0.0</span> / <span id="p1-max-eq">0</span></div></div>
+      
+      <div class="step" id="p1-step-eq">
+        <div class="step-title">Step eq. Effective properties to enter in the plane-stress code</div>
+        <div class="step-prompt">Compute E* and &nu;*. The required number of decimals is shown beside each box.</div>
+        <div class="step-inputs"><div class="input-group"><label>E* =</label><input type="text" id="p1-eq-Es" autocomplete="off"><span class="units">ksi</span></div><div class="input-group"><label>&nu;* =</label><input type="text" id="p1-eq-ns" autocomplete="off"><span class="units"></span></div><button class="check-btn" onclick="HW.check('p1','eq')">Check</button></div>
+        <div class="feedback" id="p1-eq-fb"></div>
+      </div>
+    </div>
+      </div>
+    </div>
+    <div class="p1-tab-content" id="p1-tab-gauss">
+      <p class="subtitle">Gauss quadrature is how Lecture 8 evaluates the bilinear element stiffness. Practice it on one variable first.</p>
+      <div class="interactive-demo"><p>Evaluate <span class="math-formula">I = &int;<sub>&minus;a</sub><sup>a</sup> ( p x&prime;&sup2; + q ) dx&prime;</span> with <span class="math-formula">a</span> = <span data-bind="p1_ga">?</span>, <span class="math-formula">p</span> = <span data-bind="p1_gp">?</span>, <span class="math-formula">q</span> = <span data-bind="p1_gq">?</span>, using the <strong>2-point Gauss rule</strong> mapped onto [&minus;a, a]: points x&prime; = &plusmn;a/&radic;3, each with weight a (i.e. weight 1 on [&minus;1, 1] times the Jacobian a).</p>
+      
+    <div class="part-section">
+      <div class="part-header"><h2>Question</h2><div class="part-score">Score: <span id="p1-score-gauss">0.0</span> / <span id="p1-max-gauss">0</span></div></div>
+      
+      <div class="step" id="p1-step-gauss">
+        <div class="step-title">Step gauss. Gauss points and integral</div>
+        <div class="step-prompt">Enter the positive Gauss-point location and the value of I. (A 2-point rule integrates cubics exactly, so your answer should match the exact integral.)</div>
+        <div class="step-inputs"><div class="input-group"><label>x&prime;<sub>G</sub> (positive) =</label><input type="text" id="p1-gauss-xg" autocomplete="off"><span class="units"></span></div><div class="input-group"><label>I =</label><input type="text" id="p1-gauss-I" autocomplete="off"><span class="units"></span></div><button class="check-btn" onclick="HW.check('p1','gauss')">Check</button></div>
+        <div class="feedback" id="p1-gauss-fb"></div>
+      </div>
+    </div>
+      </div>
+    </div>
+    </div>
+
+    <div class="main-tab-content" id="main-tab-p2">
+    <h1 id="p2-problem-title">Problem 2. Maximum score = 28 | Total score = <span id="p2-total-score">0.0</span></h1>
+    <div class="problem-box">
+      <p class="subtitle">A thin plate in plane stress is modeled with a single three-node <strong>constant strain triangle</strong> (Part 1&ndash;3), and then a rectangular bracket is modeled with <strong>two CST elements</strong> (Part 4). Nodes of the triangle are numbered counter-clockwise.</p>
+      <div class="fig-wrap" id="p2-fig-cst"></div>
+      <p class="diagram-caption">Triangle (nodes 1&ndash;2&ndash;3 counter-clockwise) and the interior point P. Dashed lines split the triangle into the three sub-areas used by the barycentric interpretation of N<sub>i</sub>.</p>
+      <table class="given-table">
+        <tr><td>Node coordinates (in)</td><td class="val">1: (<span data-bind="p2_x1">?</span>, <span data-bind="p2_y1">?</span>) &nbsp; 2: (<span data-bind="p2_x2">?</span>, <span data-bind="p2_y2">?</span>) &nbsp; 3: (<span data-bind="p2_x3">?</span>, <span data-bind="p2_y3">?</span>)</td></tr>
+        <tr><td>Point P (in)</td><td class="val">(x, y) = (<span data-bind="p2_px">?</span>, <span data-bind="p2_py">?</span>)</td></tr>
+        <tr><td>Thickness</td><td class="val">t = <span data-bind="p2_t">?</span> in</td></tr>
+        <tr><td>Plane stress</td><td class="val">E = <span data-bind="p2_E">?</span> ksi, &nu; = <span data-bind="p2_nu">?</span></td></tr>
+      </table>
+      <table class="disp-table"><tr><th>u<sub>1</sub></th><th>v<sub>1</sub></th><th>u<sub>2</sub></th><th>v<sub>2</sub></th><th>u<sub>3</sub></th><th>v<sub>3</sub></th></tr>
+        <tr><td><span data-bind="p2_u1">?</span></td><td><span data-bind="p2_v1">?</span></td><td><span data-bind="p2_u2">?</span></td><td><span data-bind="p2_v2">?</span></td><td><span data-bind="p2_u3">?</span></td><td><span data-bind="p2_v3">?</span></td></tr></table>
+      <p class="diagram-caption">Nodal displacements of the triangle (in), used in Parts 2 and 3.</p>
+      <div class="note-box"><strong>You will need:</strong>
+        <ul class="need-list">
+          <li>the triangle's area <span class="math-formula">A</span> and the coefficients <span class="math-formula">a<sub>i</sub>, b<sub>i</sub>, c<sub>i</sub></span> from the nodal coordinates;</li>
+          <li>the shape functions <span class="math-formula">N<sub>i</sub></span> to interpolate at P;</li>
+          <li>the strain&ndash;displacement matrix <span class="math-formula">[B]</span> and the plane-stress <span class="math-formula">[D]</span>;</li>
+          <li>the element stiffness <span class="math-formula">[K<sup>e</sup>]</span> and <span class="math-formula">{f<sup>e</sup>} = [K<sup>e</sup>]{u<sup>e</sup>}</span>;</li>
+          <li>for Part 4: assembly by DOF mapping, partitioning into free/prescribed DOFs, and a linear solve.</li>
+        </ul>
+        <p class="prec-line"><strong>Precision:</strong> the required number of decimals is printed beside every answer box (accepted within &plusmn;1 in the last required digit; integers must be exact). Vector/matrix steps have an optional <strong>Upload CSV</strong> button.</p></div>
+      <details class="formula-sheet"><summary>Formula sheet (click to open)</summary>
+        <p class="sheet-reminder">Reminder: <strong>Precision:</strong> the required number of decimals is printed beside every answer box (accepted within &plusmn;1 in the last required digit; integers must be exact). Vector/matrix steps have an optional <strong>Upload CSV</strong> button.</p>
+        <ul>
+          <li>Shape functions: <span class="math-formula">N<sub>i</sub> = (a<sub>i</sub> + b<sub>i</sub>x + c<sub>i</sub>y)/2A</span></li>
+          <li>Strain&ndash;displacement: <span class="math-formula">[B] = (1/2A)[ b<sub>1</sub> 0 b<sub>2</sub> 0 b<sub>3</sub> 0 ; 0 c<sub>1</sub> 0 c<sub>2</sub> 0 c<sub>3</sub> ; c<sub>1</sub> b<sub>1</sub> c<sub>2</sub> b<sub>2</sub> c<sub>3</sub> b<sub>3</sub> ]</span></li>
+          <li>Element stiffness: <span class="math-formula">[K<sup>e</sup>] = t A [B]<sup>T</sup>[D][B]</span></li>
+          <li>Units: work in <strong>kip</strong> and <strong>inches</strong> (E in ksi).</li>
+          <li>Nodal displacement order <span class="math-formula">{u<sub>1</sub> v<sub>1</sub> u<sub>2</sub> v<sub>2</sub> u<sub>3</sub> v<sub>3</sub>}</span>; DOF numbers run 1&hellip;6 in that order.</li>
+          <li><strong>Precision:</strong> the required number of decimals is printed beside every answer box. Enter <em>at least</em> that many decimals (small quantities such as strains and displacements are entered in scientific notation, e.g. <code>2.500e-4</code>, with at least the stated number of significant digits in the mantissa); an answer is accepted when it is within &plusmn;1 in the last required digit of the exact value, and integer answers must be exact. Do not round intermediate results &mdash; carry full precision and round only the final entry. Where a step asks for several numbers, a matrix, or a vector, an optional <strong>Upload CSV</strong> button lets you load them from a file (for example <code>np.savetxt('K.csv', K, delimiter=',')</code> in Python, or an Excel/MATLAB export) instead of typing; the boxes are filled with the file's values, and you still press <em>Check</em>. The element K, B and D matrices are best handled with a short Python/MATLAB script or Excel.</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="part-section">
+      <div class="part-header"><h2>Part 1 &mdash; Constitutive Matrix</h2><div class="part-score">Score: <span id="p2-score-M">0.0</span> / <span id="p2-max-M">0</span></div></div>
+      <p class="part-intro">Compute the plane-stress constitutive matrix [D] that every CST in this problem uses.</p>
+      <div class="step" id="p2-step-M1">
+        <div class="step-title">Step M1. Plane-stress [D]</div>
+        <div class="step-prompt">Compute d<sub>11</sub> (= d<sub>22</sub>), d<sub>12</sub> and d<sub>33</sub> for the given E and &nu;.</div>
+        <div class="step-inputs"><div class="input-group"><label>d<sub>11</sub> =</label><input type="text" id="p2-M1-d11" autocomplete="off"><span class="units">ksi</span></div><div class="input-group"><label>d<sub>12</sub> =</label><input type="text" id="p2-M1-d12" autocomplete="off"><span class="units">ksi</span></div><div class="input-group"><label>d<sub>33</sub> =</label><input type="text" id="p2-M1-d33" autocomplete="off"><span class="units">ksi</span></div><button class="check-btn" onclick="HW.check('p2','M1')">Check</button></div>
+        <div class="feedback" id="p2-M1-fb"></div>
+      </div>
+    </div>
+    <div class="part-section">
+      <div class="part-header"><h2>Part 2 &mdash; Geometry and Interpolation</h2><div class="part-score">Score: <span id="p2-score-A">0.0</span> / <span id="p2-max-A">0</span></div></div>
+      <p class="part-intro">Build the geometric quantities A, b<sub>i</sub>, c<sub>i</sub> and evaluate the shape functions and displacement at point P.</p>
+      <div class="step" id="p2-step-A1">
+        <div class="step-title">Step A1. Area</div>
+        <div class="step-prompt">Compute A = &frac12; det[1 x<sub>i</sub> y<sub>i</sub>]. It must come out positive (counter-clockwise numbering).</div>
+        <div class="step-inputs"><div class="input-group"><label>A =</label><input type="text" id="p2-A1-A" autocomplete="off"><span class="units">in&sup2;</span></div><button class="check-btn" onclick="HW.check('p2','A1')">Check</button></div>
+        <div class="feedback" id="p2-A1-fb"></div>
+      </div>
+      <div class="step" id="p2-step-A2">
+        <div class="step-title">Step A2. Coefficients b<sub>i</sub></div>
+        <div class="step-prompt">b<sub>1</sub> = y<sub>2</sub>&minus;y<sub>3</sub>, &nbsp;b<sub>2</sub> = y<sub>3</sub>&minus;y<sub>1</sub>, &nbsp;b<sub>3</sub> = y<sub>1</sub>&minus;y<sub>2</sub>.</div>
+        <div class="step-inputs"><div class="input-group"><label>b<sub>1</sub> =</label><input type="text" id="p2-A2-b1" autocomplete="off"><span class="units">in</span></div><div class="input-group"><label>b<sub>2</sub> =</label><input type="text" id="p2-A2-b2" autocomplete="off"><span class="units">in</span></div><div class="input-group"><label>b<sub>3</sub> =</label><input type="text" id="p2-A2-b3" autocomplete="off"><span class="units">in</span></div><button class="check-btn" onclick="HW.check('p2','A2')">Check</button></div>
+        <div class="feedback" id="p2-A2-fb"></div>
+      </div>
+      <div class="step" id="p2-step-A3">
+        <div class="step-title">Step A3. Coefficients c<sub>i</sub></div>
+        <div class="step-prompt">c<sub>1</sub> = x<sub>3</sub>&minus;x<sub>2</sub>, &nbsp;c<sub>2</sub> = x<sub>1</sub>&minus;x<sub>3</sub>, &nbsp;c<sub>3</sub> = x<sub>2</sub>&minus;x<sub>1</sub>.</div>
+        <div class="step-inputs"><div class="input-group"><label>c<sub>1</sub> =</label><input type="text" id="p2-A3-c1" autocomplete="off"><span class="units">in</span></div><div class="input-group"><label>c<sub>2</sub> =</label><input type="text" id="p2-A3-c2" autocomplete="off"><span class="units">in</span></div><div class="input-group"><label>c<sub>3</sub> =</label><input type="text" id="p2-A3-c3" autocomplete="off"><span class="units">in</span></div><button class="check-btn" onclick="HW.check('p2','A3')">Check</button></div>
+        <div class="feedback" id="p2-A3-fb"></div>
+      </div>
+      <div class="step" id="p2-step-A4">
+        <div class="step-title">Step A4. Shape functions at P</div>
+        <div class="step-prompt">Evaluate N<sub>1</sub>, N<sub>2</sub>, N<sub>3</sub> at P = (<span data-bind="p2_px">?</span>, <span data-bind="p2_py">?</span>) using N<sub>i</sub> = (a<sub>i</sub> + b<sub>i</sub>x + c<sub>i</sub>y)/2A with a<sub>1</sub> = x<sub>2</sub>y<sub>3</sub>&minus;x<sub>3</sub>y<sub>2</sub>, a<sub>2</sub> = x<sub>3</sub>y<sub>1</sub>&minus;x<sub>1</sub>y<sub>3</sub>, a<sub>3</sub> = x<sub>1</sub>y<sub>2</sub>&minus;x<sub>2</sub>y<sub>1</sub>.</div>
+        <div class="step-inputs"><div class="input-group"><label>N<sub>1</sub> =</label><input type="text" id="p2-A4-N1" autocomplete="off"><span class="units"></span></div><div class="input-group"><label>N<sub>2</sub> =</label><input type="text" id="p2-A4-N2" autocomplete="off"><span class="units"></span></div><div class="input-group"><label>N<sub>3</sub> =</label><input type="text" id="p2-A4-N3" autocomplete="off"><span class="units"></span></div><button class="check-btn" onclick="HW.check('p2','A4')">Check</button></div>
+        <div class="feedback" id="p2-A4-fb"></div><div class="hint">Hint: N<sub>1</sub>+N<sub>2</sub>+N<sub>3</sub> = 1 everywhere; N<sub>i</sub> = A<sub>i</sub>/A (sub-area opposite node i).</div>
+      </div>
+      <div class="step" id="p2-step-A5">
+        <div class="step-title">Step A5. Displacement at P</div>
+        <div class="step-prompt">Interpolate the displacement at P: u = N<sub>1</sub>u<sub>1</sub>+N<sub>2</sub>u<sub>2</sub>+N<sub>3</sub>u<sub>3</sub>, v = N<sub>1</sub>v<sub>1</sub>+N<sub>2</sub>v<sub>2</sub>+N<sub>3</sub>v<sub>3</sub>.</div>
+        <div class="step-inputs"><div class="input-group"><label>u(P) =</label><input type="text" id="p2-A5-u" autocomplete="off"><span class="units">in</span></div><div class="input-group"><label>v(P) =</label><input type="text" id="p2-A5-v" autocomplete="off"><span class="units">in</span></div><button class="check-btn" onclick="HW.check('p2','A5')">Check</button></div>
+        <div class="feedback" id="p2-A5-fb"></div>
+      </div>
+    </div>
+    <div class="part-section">
+      <div class="part-header"><h2>Part 3 &mdash; Strain, Stress, Stiffness and Nodal Forces</h2><div class="part-score">Score: <span id="p2-score-B">0.0</span> / <span id="p2-max-B">0</span></div></div>
+      <p class="part-intro">Form [B], strains, stresses, the element stiffness, and the nodal forces that hold the given deformed shape; then check equilibrium.</p>
+      <div class="step" id="p2-step-B1">
+        <div class="step-title">Step B1. Entries of [B]</div>
+        <div class="step-prompt">Using [B] = (1/2A)[G], find three entries of the 3&times;6 matrix [B] (row, column): B<sub>11</sub>, B<sub>24</sub>, B<sub>35</sub>.</div>
+        <div class="step-inputs"><div class="input-group"><label>B<sub>11</sub> =</label><input type="text" id="p2-B1-B11" autocomplete="off"><span class="units">1/in</span></div><div class="input-group"><label>B<sub>24</sub> =</label><input type="text" id="p2-B1-B24" autocomplete="off"><span class="units">1/in</span></div><div class="input-group"><label>B<sub>35</sub> =</label><input type="text" id="p2-B1-B35" autocomplete="off"><span class="units">1/in</span></div><button class="check-btn" onclick="HW.check('p2','B1')">Check</button></div>
+        <div class="feedback" id="p2-B1-fb"></div><div class="hint">Hint: B<sub>11</sub> = b<sub>1</sub>/2A, B<sub>24</sub> = c<sub>2</sub>/2A, B<sub>35</sub> = c<sub>3</sub>/2A.</div>
+      </div>
+      <div class="step" id="p2-step-B2">
+        <div class="step-title">Step B2. Element strains</div>
+        <div class="step-prompt">Compute {&epsilon;} = [B]{u<sup>e</sup>}. Strain is constant over the element.</div>
+        <div class="step-inputs"><div class="input-group"><label>&epsilon;<sub>xx</sub> =</label><input type="text" id="p2-B2-ex" autocomplete="off"><span class="units"></span></div><div class="input-group"><label>&epsilon;<sub>yy</sub> =</label><input type="text" id="p2-B2-ey" autocomplete="off"><span class="units"></span></div><div class="input-group"><label>&gamma;<sub>xy</sub> =</label><input type="text" id="p2-B2-gxy" autocomplete="off"><span class="units"></span></div><button class="check-btn" onclick="HW.check('p2','B2')">Check</button></div>
+        <div class="feedback" id="p2-B2-fb"></div>
+      </div>
+      <div class="step" id="p2-step-B3">
+        <div class="step-title">Step B3. Element stresses</div>
+        <div class="step-prompt">Compute {&sigma;} = [D]{&epsilon;} using the plane-stress [D] from Part 1.</div>
+        <div class="step-inputs"><div class="input-group"><label>&sigma;<sub>x</sub> =</label><input type="text" id="p2-B3-sx" autocomplete="off"><span class="units">ksi</span></div><div class="input-group"><label>&sigma;<sub>y</sub> =</label><input type="text" id="p2-B3-sy" autocomplete="off"><span class="units">ksi</span></div><div class="input-group"><label>&tau;<sub>xy</sub> =</label><input type="text" id="p2-B3-txy" autocomplete="off"><span class="units">ksi</span></div><button class="check-btn" onclick="HW.check('p2','B3')">Check</button></div>
+        <div class="feedback" id="p2-B3-fb"></div>
+      </div>
+      <div class="step" id="p2-step-B4">
+        <div class="step-title">Step B4. Stiffness: first block</div>
+        <div class="step-prompt">Using [K<sup>e</sup>] = tA[B]<sup>T</sup>[D][B] = (t/4A)[G]<sup>T</sup>[D][G], compute K<sub>11</sub>, K<sub>12</sub>, K<sub>22</sub> (row, column) of the 6&times;6 matrix.</div>
+        <div class="step-inputs"><div class="input-group"><label>K<sub>11</sub> =</label><input type="text" id="p2-B4-K11" autocomplete="off"><span class="units">kip/in</span></div><div class="input-group"><label>K<sub>12</sub> =</label><input type="text" id="p2-B4-K12" autocomplete="off"><span class="units">kip/in</span></div><div class="input-group"><label>K<sub>22</sub> =</label><input type="text" id="p2-B4-K22" autocomplete="off"><span class="units">kip/in</span></div><button class="check-btn" onclick="HW.check('p2','B4')">Check</button></div>
+        <div class="feedback" id="p2-B4-fb"></div><div class="hint">Hint: K<sub>11</sub> = (t/4A)(d<sub>11</sub>b<sub>1</sub>&sup2; + d<sub>33</sub>c<sub>1</sub>&sup2;).</div>
+      </div>
+      <div class="step" id="p2-step-B5">
+        <div class="step-title">Step B5. Stiffness: coupling terms</div>
+        <div class="step-prompt">Compute K<sub>13</sub> (u<sub>1</sub>&ndash;u<sub>2</sub> coupling) and K<sub>26</sub> (v<sub>1</sub>&ndash;v<sub>3</sub> coupling).</div>
+        <div class="step-inputs"><div class="input-group"><label>K<sub>13</sub> =</label><input type="text" id="p2-B5-K13" autocomplete="off"><span class="units">kip/in</span></div><div class="input-group"><label>K<sub>26</sub> =</label><input type="text" id="p2-B5-K26" autocomplete="off"><span class="units">kip/in</span></div><button class="check-btn" onclick="HW.check('p2','B5')">Check</button></div>
+        <div class="feedback" id="p2-B5-fb"></div><div class="hint">Hint: Block formula: [k<sub>ij</sub>] has entries d<sub>11</sub>b<sub>i</sub>b<sub>j</sub>+d<sub>33</sub>c<sub>i</sub>c<sub>j</sub> (top-left) and d<sub>22</sub>c<sub>i</sub>c<sub>j</sub>+d<sub>33</sub>b<sub>i</sub>b<sub>j</sub> (bottom-right); the other two entries are d<sub>12</sub>b<sub>i</sub>c<sub>j</sub>+d<sub>33</sub>c<sub>i</sub>b<sub>j</sub> and d<sub>12</sub>c<sub>i</sub>b<sub>j</sub>+d<sub>33</sub>b<sub>i</sub>c<sub>j</sub>.</div>
+      </div>
+      <div class="step" id="p2-step-B6">
+        <div class="step-title">Step B6. Nodal forces that hold this deformed shape</div>
+        <div class="step-prompt">Compute {f<sup>e</sup>} = [K<sup>e</sup>]{u<sup>e</sup>} (equivalently tA[B]<sup>T</sup>{&sigma;}).</div>
+        <div class="step-inputs"><div class="input-group"><label>f<sub>1x</sub> =</label><input type="text" id="p2-B6-f1x" autocomplete="off"><span class="units">kip</span></div><div class="input-group"><label>f<sub>1y</sub> =</label><input type="text" id="p2-B6-f1y" autocomplete="off"><span class="units">kip</span></div><div class="input-group"><label>f<sub>2x</sub> =</label><input type="text" id="p2-B6-f2x" autocomplete="off"><span class="units">kip</span></div><div class="input-group"><label>f<sub>2y</sub> =</label><input type="text" id="p2-B6-f2y" autocomplete="off"><span class="units">kip</span></div><div class="input-group"><label>f<sub>3x</sub> =</label><input type="text" id="p2-B6-f3x" autocomplete="off"><span class="units">kip</span></div><div class="input-group"><label>f<sub>3y</sub> =</label><input type="text" id="p2-B6-f3y" autocomplete="off"><span class="units">kip</span></div><button class="check-btn" onclick="HW.check('p2','B6')">Check</button></div>
+        <div class="feedback" id="p2-B6-fb"></div>
+      </div>
+      <div class="step" id="p2-step-B7">
+        <div class="step-title">Step B7. Equilibrium check</div>
+        <div class="step-prompt">With no body force the nodal forces must be in equilibrium. Enter &Sigma;F<sub>x</sub> and &Sigma;F<sub>y</sub> from your six forces (they should be essentially zero). Use the unrounded nodal forces from step B6 when summing; summing the rounded entries may fall outside the tolerance.</div>
+        <div class="step-inputs"><div class="input-group"><label>&Sigma;F<sub>x</sub> =</label><input type="text" id="p2-B7-sFx" autocomplete="off"><span class="units">kip</span></div><div class="input-group"><label>&Sigma;F<sub>y</sub> =</label><input type="text" id="p2-B7-sFy" autocomplete="off"><span class="units">kip</span></div><button class="check-btn" onclick="HW.check('p2','B7')">Check</button></div>
+        <div class="feedback" id="p2-B7-fb"></div>
+      </div><details class="reflection"><summary>Reflection (ungraded)</summary><p>Do the force sums make sense for a free body with no external loads on this single element?</p></details>
+    </div>
+    <div class="part-section" style="padding-bottom:0;border-bottom:none;margin-bottom:0;"><div class="part-header"><h2>Part 4 &mdash; Two-CST Bracket (assembly and solution)</h2></div>
+      <p class="part-intro">Assemble two CST elements into the bracket, apply boundary conditions, solve for free displacements, recover stresses and support reactions.</p>
+      <p>The rectangle below (<span class="math-formula">w</span> &times; <span class="math-formula">h</span>) is modeled with two CST elements: Element 1 = global nodes (1, 2, 3) and Element 2 = global nodes (2, 4, 3), exactly as in the lecture's worked example. Node 1 is pinned (<span class="math-formula">u<sub>1</sub>=v<sub>1</sub>=0</span>), node 2 is a roller (<span class="math-formula">v<sub>2</sub>=0</span>), and an upward load <span class="math-formula">P</span> acts at <strong>each</strong> of nodes 3 and 4. Use the same <span class="math-formula">E, &nu;, t</span> as above.</p>
+      <div class="fig-wrap" id="p2-fig-bracket"></div>
+      <table class="given-table"><tr><td>Width &times; height</td><td class="val">w = <span data-bind="p2_bw">?</span> in, &nbsp; h = <span data-bind="p2_bh">?</span> in</td></tr><tr><td>Load at nodes 3 and 4</td><td class="val">P = <span data-bind="p2_bP">?</span> kip each (upward)</td></tr></table>
+      <p>Global DOF order: u<sub>1</sub>, v<sub>1</sub>, u<sub>2</sub>, v<sub>2</sub>, u<sub>3</sub>, v<sub>3</sub>, u<sub>4</sub>, v<sub>4</sub> (DOF 1&hellip;8). Each element's local DOF order is its own node order.</p>
+    </div>
+    <div class="part-section" style="margin-top:0;border-top:none;">
+      <div class="part-header"><h3 style="margin:0">Part 4 steps</h3><div class="part-score">Score: <span id="p2-score-C">0.0</span> / <span id="p2-max-C">0</span></div></div>
+      <div class="step" id="p2-step-C1">
+        <div class="step-title">Step C1. Element areas</div>
+        <div class="step-prompt">Compute A<sub>1</sub> and A<sub>2</sub>.</div>
+        <div class="step-inputs"><div class="input-group"><label>A<sub>1</sub> =</label><input type="text" id="p2-C1-A1" autocomplete="off"><span class="units">in&sup2;</span></div><div class="input-group"><label>A<sub>2</sub> =</label><input type="text" id="p2-C1-A2" autocomplete="off"><span class="units">in&sup2;</span></div><button class="check-btn" onclick="HW.check('p2','C1')">Check</button></div>
+        <div class="feedback" id="p2-C1-fb"></div>
+      </div>
+      <div class="step" id="p2-step-C2">
+        <div class="step-title">Step C2. Element 1 stiffness entries</div>
+        <div class="step-prompt">For Element 1 (nodes (0,0), (w,0), (0,h)) compute K<sup>(1)</sup><sub>11</sub> and K<sup>(1)</sup><sub>33</sub>.</div>
+        <div class="step-inputs"><div class="input-group"><label>K<sup>(1)</sup><sub>11</sub> =</label><input type="text" id="p2-C2-K11" autocomplete="off"><span class="units">kip/in</span></div><div class="input-group"><label>K<sup>(1)</sup><sub>33</sub> =</label><input type="text" id="p2-C2-K33" autocomplete="off"><span class="units">kip/in</span></div><button class="check-btn" onclick="HW.check('p2','C2')">Check</button></div>
+        <div class="feedback" id="p2-C2-fb"></div><div class="hint">Hint: Element 1: b = (&minus;h, h, 0), c = (&minus;w, 0, w).</div>
+      </div>
+      <div class="step" id="p2-step-C3">
+        <div class="step-title">Step C3. Assembly</div>
+        <div class="step-prompt">Element 2 has local order (u<sub>2</sub>, v<sub>2</sub>, u<sub>4</sub>, v<sub>4</sub>, u<sub>3</sub>, v<sub>3</sub>). Enter the global DOF number that local DOF 3 of Element 2 maps to, and the assembled global stiffness K<sub>33</sub> (the u<sub>2</sub>&ndash;u<sub>2</sub> term, to which both elements contribute).</div>
+        <div class="step-inputs"><div class="input-group"><label>global DOF # =</label><input type="text" id="p2-C3-dof" autocomplete="off"><span class="units"></span></div><div class="input-group"><label>K<sub>33</sub> =</label><input type="text" id="p2-C3-Kg33" autocomplete="off"><span class="units">kip/in</span></div><button class="check-btn" onclick="HW.check('p2','C3')">Check</button></div>
+        <div class="feedback" id="p2-C3-fb"></div><div class="hint">Hint: K<sub>33</sub> = K<sup>(1)</sup><sub>33</sub> + K<sup>(2)</sup><sub>11</sub>.</div>
+      </div>
+      <div class="step" id="p2-step-C4">
+        <div class="step-title">Step C4. Free DOFs</div>
+        <div class="step-prompt">After deleting the rows and columns of the prescribed DOFs (u<sub>1</sub>, v<sub>1</sub>, v<sub>2</sub>), how many free DOFs remain?</div>
+        <div class="step-inputs"><div class="input-group"><label>free DOFs =</label><input type="text" id="p2-C4-nf" autocomplete="off"><span class="units"></span></div><button class="check-btn" onclick="HW.check('p2','C4')">Check</button></div>
+        <div class="feedback" id="p2-C4-fb"></div>
+      </div>
+      <div class="step" id="p2-step-C5">
+        <div class="step-title">Step C5. Solve for displacements</div>
+        <div class="step-prompt">Assemble [K<sub>ff</sub>]{u<sub>f</sub>} = {F<sub>f</sub>} and solve (use a calculator or code). Enter u<sub>2</sub>, v<sub>3</sub>, u<sub>4</sub>.</div>
+        <div class="step-inputs"><div class="input-group"><label>u<sub>2</sub> =</label><input type="text" id="p2-C5-u2" autocomplete="off"><span class="units">in</span></div><div class="input-group"><label>v<sub>3</sub> =</label><input type="text" id="p2-C5-v3" autocomplete="off"><span class="units">in</span></div><div class="input-group"><label>u<sub>4</sub> =</label><input type="text" id="p2-C5-u4" autocomplete="off"><span class="units">in</span></div><button class="check-btn" onclick="HW.check('p2','C5')">Check</button></div>
+        <div class="feedback" id="p2-C5-fb"></div><div class="hint">Hint: Free DOFs are u<sub>2</sub>, u<sub>3</sub>, v<sub>3</sub>, u<sub>4</sub>, v<sub>4</sub>; the load vector is zero except F(v<sub>3</sub>) = F(v<sub>4</sub>) = P. Sanity check: the state is uniaxial, &sigma;<sub>y</sub> = 2P/(w t).</div>
+      </div>
+      <div class="step" id="p2-step-C6">
+        <div class="step-title">Step C6. Stresses in Element 2</div>
+        <div class="step-prompt">Using Element 2's own [B] and your displacements, compute its stresses (they should resemble the uniaxial estimate).</div>
+        <div class="step-inputs"><div class="input-group"><label>&sigma;<sub>x</sub> =</label><input type="text" id="p2-C6-sx" autocomplete="off"><span class="units">ksi</span></div><div class="input-group"><label>&sigma;<sub>y</sub> =</label><input type="text" id="p2-C6-sy" autocomplete="off"><span class="units">ksi</span></div><div class="input-group"><label>&tau;<sub>xy</sub> =</label><input type="text" id="p2-C6-txy" autocomplete="off"><span class="units">ksi</span></div><button class="check-btn" onclick="HW.check('p2','C6')">Check</button></div>
+        <div class="feedback" id="p2-C6-fb"></div>
+      </div>
+      <div class="step" id="p2-step-C7">
+        <div class="step-title">Step C7. Support reactions</div>
+        <div class="step-prompt">Back-substitute into the three deleted rows to get the reactions: P<sub>1x</sub>, P<sub>1y</sub>, P<sub>2y</sub> (sign: positive = +x / +y).</div>
+        <div class="step-inputs"><div class="input-group"><label>P<sub>1x</sub> =</label><input type="text" id="p2-C7-R1x" autocomplete="off"><span class="units">kip</span></div><div class="input-group"><label>P<sub>1y</sub> =</label><input type="text" id="p2-C7-R1y" autocomplete="off"><span class="units">kip</span></div><div class="input-group"><label>P<sub>2y</sub> =</label><input type="text" id="p2-C7-R2y" autocomplete="off"><span class="units">kip</span></div><button class="check-btn" onclick="HW.check('p2','C7')">Check</button></div>
+        <div class="feedback" id="p2-C7-fb"></div><div class="hint">Hint: Check &Sigma;F<sub>y</sub> = 0: the two reactions must balance 2P.</div>
+      </div><details class="reflection"><summary>Reflection (ungraded)</summary><p>Check that the vertical reactions balance 2P. What does a non-zero P<sub>1x</sub> tell you about the supports?</p></details>
+    </div>
+    </div>
+
+    <div class="main-tab-content" id="main-tab-p3">
+    <h1 id="p3-problem-title">Problem 3. Maximum score = 24 | Total score = <span id="p3-total-score">0.0</span></h1>
+    <div class="problem-box">
+      <p class="subtitle">A rectangular four-node bilinear element (nodes numbered counter-clockwise from the lower-left corner) is part of a long retaining structure and is therefore analyzed in <strong>plane strain</strong>. A uniform tension <span class="math-formula">p</span> acts on the top edge (nodes 3&ndash;4).</p>
+      <div class="fig-wrap" id="p3-fig-q4"></div>
+      <p class="diagram-caption">Bilinear element with local axes x&prime;, y&prime; at the centroid. Q is the point used in Part 2.</p>
+      <table class="given-table">
+        <tr><td>Global corners (in)</td><td class="val">node 1 = (<span data-bind="p3_x1">?</span>, <span data-bind="p3_y1">?</span>), &nbsp; node 2 has x = <span data-bind="p3_x2">?</span>, &nbsp; node 4 has y = <span data-bind="p3_y4">?</span></td></tr>
+        <tr><td>Thickness</td><td class="val">t = <span data-bind="p3_t">?</span> in</td></tr>
+        <tr><td>Plane strain</td><td class="val">E = <span data-bind="p3_E">?</span> ksi, &nu; = <span data-bind="p3_nu">?</span></td></tr>
+        <tr><td>Top-edge traction</td><td class="val">p = <span data-bind="p3_p">?</span> ksi (tension, +y&prime;)</td></tr>
+        <tr><td>Point Q (local)</td><td class="val">(x&prime;, y&prime;) = (<span data-bind="p3_xp">?</span>, <span data-bind="p3_yp">?</span>) in</td></tr>
+      </table>
+      <table class="disp-table"><tr><th>u<sub>1</sub></th><th>v<sub>1</sub></th><th>u<sub>2</sub></th><th>v<sub>2</sub></th><th>u<sub>3</sub></th><th>v<sub>3</sub></th><th>u<sub>4</sub></th><th>v<sub>4</sub></th></tr>
+        <tr><td><span data-bind="p3_u1">?</span></td><td><span data-bind="p3_v1">?</span></td><td><span data-bind="p3_u2">?</span></td><td><span data-bind="p3_v2">?</span></td><td><span data-bind="p3_u3">?</span></td><td><span data-bind="p3_v3">?</span></td><td><span data-bind="p3_u4">?</span></td><td><span data-bind="p3_v4">?</span></td></tr></table>
+      <p class="diagram-caption">Nodal displacements (in).</p>
+      <div class="note-box"><strong>You will need:</strong>
+        <ul class="need-list">
+          <li>the half-sides <span class="math-formula">a, b</span> and local centroid coordinates <span class="math-formula">(x&prime;, y&prime;)</span>;</li>
+          <li>the bilinear shape functions <span class="math-formula">N<sub>1</sub>&hellip;N<sub>4</sub></span> and the 3&times;8 matrix <span class="math-formula">[B(x&prime;,y&prime;)]</span>;</li>
+          <li>the <strong>plane-strain</strong> <span class="math-formula">[D]</span>, and <span class="math-formula">&sigma;<sub>z</sub></span> from <span class="math-formula">&epsilon;<sub>z</sub> = 0</span>;</li>
+          <li>2&times;2 Gauss quadrature (and the 1-point rule for comparison) to form <span class="math-formula">[K<sup>e</sup>]</span>;</li>
+          <li>consistent nodal loads from the top-edge traction.</li>
+        </ul>
+        <p class="prec-line"><strong>Precision:</strong> the required number of decimals is printed beside every answer box (accepted within &plusmn;1 in the last required digit; integers must be exact). Vector/matrix steps have an optional <strong>Upload CSV</strong> button.</p></div>
+      <details class="formula-sheet"><summary>Formula sheet (click to open)</summary>
+        <p class="sheet-reminder">Reminder: <strong>Precision:</strong> the required number of decimals is printed beside every answer box (accepted within &plusmn;1 in the last required digit; integers must be exact). Vector/matrix steps have an optional <strong>Upload CSV</strong> button.</p>
+        <ul>
+          <li>Local coordinates: <span class="math-formula">x&prime; = x &minus; (x<sub>1</sub>+a), y&prime; = y &minus; (y<sub>1</sub>+b)</span></li>
+          <li>Shape functions: <span class="math-formula">N<sub>1</sub> = (a&minus;x&prime;)(b&minus;y&prime;)/4ab, N<sub>2</sub> = (x&prime;+a)(b&minus;y&prime;)/4ab, N<sub>3</sub> = (x&prime;+a)(y&prime;+b)/4ab, N<sub>4</sub> = (a&minus;x&prime;)(y&prime;+b)/4ab</span></li>
+          <li>Strain&ndash;displacement: the 3&times;8 <span class="math-formula">[B(x&prime;,y&prime;)]</span> from lecture</li>
+          <li>Element stiffness: <span class="math-formula">[K<sup>e</sup>] = t&int;&int;[B]<sup>T</sup>[D][B]dx&prime;dy&prime;</span> evaluated by <strong>2&times;2 Gauss quadrature</strong> (points x&prime; = &plusmn;a/&radic;3, y&prime; = &plusmn;b/&radic;3, all four weights = 1, factor t&middot;a&middot;b). This element is in <strong>plane strain</strong>.</li>
+          <li>DOF order <span class="math-formula">{u<sub>1</sub> v<sub>1</sub> u<sub>2</sub> v<sub>2</sub> u<sub>3</sub> v<sub>3</sub> u<sub>4</sub> v<sub>4</sub>}</span> (DOF 1&hellip;8); units kip and inches.</li>
+          <li><strong>Precision:</strong> the required number of decimals is printed beside every answer box. Enter <em>at least</em> that many decimals (small quantities such as strains and displacements are entered in scientific notation, e.g. <code>2.500e-4</code>, with at least the stated number of significant digits in the mantissa); an answer is accepted when it is within &plusmn;1 in the last required digit of the exact value, and integer answers must be exact. Do not round intermediate results &mdash; carry full precision and round only the final entry. Where a step asks for several numbers, a matrix, or a vector, an optional <strong>Upload CSV</strong> button lets you load them from a file (for example <code>np.savetxt('K.csv', K, delimiter=',')</code> in Python, or an Excel/MATLAB export) instead of typing; the boxes are filled with the file's values, and you still press <em>Check</em>. The element K, B and D matrices are best handled with a short Python/MATLAB script or Excel.</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="part-section">
+      <div class="part-header"><h2>Part 1 &mdash; Preliminaries</h2><div class="part-score">Score: <span id="p3-score-P">0.0</span> / <span id="p3-max-P">0</span></div></div>
+      
+      <div class="step" id="p3-step-P1">
+        <div class="step-title">Step P1. Half-sides</div>
+        <div class="step-prompt">Compute a = (x<sub>2</sub>&minus;x<sub>1</sub>)/2 and b = (y<sub>4</sub>&minus;y<sub>1</sub>)/2.</div>
+        <div class="step-inputs"><div class="input-group"><label>a =</label><input type="text" id="p3-P1-a" autocomplete="off"><span class="units">in</span></div><div class="input-group"><label>b =</label><input type="text" id="p3-P1-b" autocomplete="off"><span class="units">in</span></div><button class="check-btn" onclick="HW.check('p3','P1')">Check</button></div>
+        <div class="feedback" id="p3-P1-fb"></div>
+      </div>
+      <div class="step" id="p3-step-P2">
+        <div class="step-title">Step P2. Plane-strain [D]</div>
+        <div class="step-prompt">Compute d<sub>11</sub> (= d<sub>22</sub>), d<sub>12</sub> and d<sub>33</sub> for plane strain (Lecture 6).</div>
+        <div class="step-inputs"><div class="input-group"><label>d<sub>11</sub> =</label><input type="text" id="p3-P2-d11" autocomplete="off"><span class="units">ksi</span></div><div class="input-group"><label>d<sub>12</sub> =</label><input type="text" id="p3-P2-d12" autocomplete="off"><span class="units">ksi</span></div><div class="input-group"><label>d<sub>33</sub> =</label><input type="text" id="p3-P2-d33" autocomplete="off"><span class="units">ksi</span></div><button class="check-btn" onclick="HW.check('p3','P2')">Check</button></div>
+        <div class="feedback" id="p3-P2-fb"></div><div class="hint">Hint: d<sub>11</sub> = E(1&minus;&nu;)/((1+&nu;)(1&minus;2&nu;)), d<sub>12</sub> = E&nu;/((1+&nu;)(1&minus;2&nu;)), d<sub>33</sub> = E/(2(1+&nu;)).</div>
+      </div>
+    </div>
+    <div class="part-section">
+      <div class="part-header"><h2>Part 2 &mdash; Interpolation, Strain and Stress</h2><div class="part-score">Score: <span id="p3-score-S">0.0</span> / <span id="p3-max-S">0</span></div></div>
+      
+      <div class="step" id="p3-step-S1">
+        <div class="step-title">Step S1. Shape functions at Q</div>
+        <div class="step-prompt">Evaluate N<sub>1</sub>&hellip;N<sub>4</sub> at Q: (x&prime;, y&prime;) = (<span data-bind="p3_xp">?</span>, <span data-bind="p3_yp">?</span>). Use the local formulas (not global coordinates).</div>
+        <div class="step-inputs"><div class="input-group"><label>N<sub>1</sub> =</label><input type="text" id="p3-S1-N1" autocomplete="off"><span class="units"></span></div><div class="input-group"><label>N<sub>2</sub> =</label><input type="text" id="p3-S1-N2" autocomplete="off"><span class="units"></span></div><div class="input-group"><label>N<sub>3</sub> =</label><input type="text" id="p3-S1-N3" autocomplete="off"><span class="units"></span></div><div class="input-group"><label>N<sub>4</sub> =</label><input type="text" id="p3-S1-N4" autocomplete="off"><span class="units"></span></div><button class="check-btn" onclick="HW.check('p3','S1')">Check</button></div>
+        <div class="feedback" id="p3-S1-fb"></div><div class="hint">Hint: They must sum to 1.</div>
+      </div>
+      <div class="step" id="p3-step-S2">
+        <div class="step-title">Step S2. Displacement at Q</div>
+        <div class="step-prompt">u(Q) = &Sigma;N<sub>i</sub>u<sub>i</sub>, v(Q) = &Sigma;N<sub>i</sub>v<sub>i</sub>.</div>
+        <div class="step-inputs"><div class="input-group"><label>u(Q) =</label><input type="text" id="p3-S2-u" autocomplete="off"><span class="units">in</span></div><div class="input-group"><label>v(Q) =</label><input type="text" id="p3-S2-v" autocomplete="off"><span class="units">in</span></div><button class="check-btn" onclick="HW.check('p3','S2')">Check</button></div>
+        <div class="feedback" id="p3-S2-fb"></div>
+      </div>
+      <div class="step" id="p3-step-S3">
+        <div class="step-title">Step S3. Strain at Q</div>
+        <div class="step-prompt">Evaluate [B] at Q and compute {&epsilon;} = [B(x&prime;,y&prime;)]{u<sup>e</sup>}.</div>
+        <div class="step-inputs"><div class="input-group"><label>&epsilon;<sub>xx</sub> =</label><input type="text" id="p3-S3-ex" autocomplete="off"><span class="units"></span></div><div class="input-group"><label>&epsilon;<sub>yy</sub> =</label><input type="text" id="p3-S3-ey" autocomplete="off"><span class="units"></span></div><div class="input-group"><label>&gamma;<sub>xy</sub> =</label><input type="text" id="p3-S3-gxy" autocomplete="off"><span class="units"></span></div><button class="check-btn" onclick="HW.check('p3','S3')">Check</button></div>
+        <div class="feedback" id="p3-S3-fb"></div>
+      </div>
+      <div class="step" id="p3-step-S4">
+        <div class="step-title">Step S4. Strain at the centroid</div>
+        <div class="step-prompt">Evaluate the strain at (x&prime;, y&prime;) = (0, 0).</div>
+        <div class="step-inputs"><div class="input-group"><label>&epsilon;<sub>xx</sub> =</label><input type="text" id="p3-S4-ex" autocomplete="off"><span class="units"></span></div><div class="input-group"><label>&epsilon;<sub>yy</sub> =</label><input type="text" id="p3-S4-ey" autocomplete="off"><span class="units"></span></div><div class="input-group"><label>&gamma;<sub>xy</sub> =</label><input type="text" id="p3-S4-gxy" autocomplete="off"><span class="units"></span></div><button class="check-btn" onclick="HW.check('p3','S4')">Check</button></div>
+        <div class="feedback" id="p3-S4-fb"></div><div class="hint">Hint: Unlike the CST, the strain here is not constant: compare with your answer to S3.</div>
+      </div>
+      <div class="step" id="p3-step-S5">
+        <div class="step-title">Step S5. Stress at the centroid</div>
+        <div class="step-prompt">Compute {&sigma;} = [D]{&epsilon;} at the centroid, plus the out-of-plane stress &sigma;<sub>z</sub> that plane strain requires. In plane strain &epsilon;<sub>z</sub> = 0, so &sigma;<sub>z</sub> = &nu;(&sigma;<sub>x</sub> + &sigma;<sub>y</sub>). Report &sigma;<sub>z</sub> as well.</div>
+        <div class="step-inputs"><div class="input-group"><label>&sigma;<sub>x</sub> =</label><input type="text" id="p3-S5-sx" autocomplete="off"><span class="units">ksi</span></div><div class="input-group"><label>&sigma;<sub>y</sub> =</label><input type="text" id="p3-S5-sy" autocomplete="off"><span class="units">ksi</span></div><div class="input-group"><label>&tau;<sub>xy</sub> =</label><input type="text" id="p3-S5-txy" autocomplete="off"><span class="units">ksi</span></div><div class="input-group"><label>&sigma;<sub>z</sub> =</label><input type="text" id="p3-S5-sz" autocomplete="off"><span class="units">ksi</span></div><button class="check-btn" onclick="HW.check('p3','S5')">Check</button></div>
+        <div class="feedback" id="p3-S5-fb"></div><div class="hint">Hint: In plane strain &epsilon;<sub>zz</sub> = 0 but &sigma;<sub>z</sub> = &nu;(&sigma;<sub>x</sub> + &sigma;<sub>y</sub>).</div>
+      </div>
+      <div class="step" id="p3-step-S6">
+        <div class="step-title">Step S6. Strain at corner node 3</div>
+        <div class="step-prompt">Evaluate the strain at (x&prime;, y&prime;) = (a, b), the location of node 3.</div>
+        <div class="step-inputs"><div class="input-group"><label>&epsilon;<sub>xx</sub> =</label><input type="text" id="p3-S6-ex" autocomplete="off"><span class="units"></span></div><div class="input-group"><label>&epsilon;<sub>yy</sub> =</label><input type="text" id="p3-S6-ey" autocomplete="off"><span class="units"></span></div><div class="input-group"><label>&gamma;<sub>xy</sub> =</label><input type="text" id="p3-S6-gxy" autocomplete="off"><span class="units"></span></div><button class="check-btn" onclick="HW.check('p3','S6')">Check</button></div>
+        <div class="feedback" id="p3-S6-fb"></div>
+      </div>
+    </div>
+    <div class="part-section">
+      <div class="part-header"><h2>Part 3 &mdash; Stiffness by Gauss Quadrature</h2><div class="part-score">Score: <span id="p3-score-K">0.0</span> / <span id="p3-max-K">0</span></div></div>
+      
+      <div class="step" id="p3-step-K1">
+        <div class="step-title">Step K1. Gauss points</div>
+        <div class="step-prompt">For the 2&times;2 rule, enter the positive Gauss-point coordinates x&prime;<sub>G</sub> = a/&radic;3 and y&prime;<sub>G</sub> = b/&radic;3.</div>
+        <div class="step-inputs"><div class="input-group"><label>x&prime;<sub>G</sub> =</label><input type="text" id="p3-K1-xg" autocomplete="off"><span class="units">in</span></div><div class="input-group"><label>y&prime;<sub>G</sub> =</label><input type="text" id="p3-K1-yg" autocomplete="off"><span class="units">in</span></div><button class="check-btn" onclick="HW.check('p3','K1')">Check</button></div>
+        <div class="feedback" id="p3-K1-fb"></div>
+      </div>
+      <div class="step" id="p3-step-K2">
+        <div class="step-title">Step K2. [B] at Gauss point G1</div>
+        <div class="step-prompt">At G1 = (&minus;a/&radic;3, &minus;b/&radic;3), compute B<sub>11</sub>, B<sub>22</sub> and B<sub>35</sub> (row, column) of the 3&times;8 matrix.</div>
+        <div class="step-inputs"><div class="input-group"><label>B<sub>11</sub> =</label><input type="text" id="p3-K2-B11" autocomplete="off"><span class="units">1/in</span></div><div class="input-group"><label>B<sub>22</sub> =</label><input type="text" id="p3-K2-B22" autocomplete="off"><span class="units">1/in</span></div><div class="input-group"><label>B<sub>35</sub> =</label><input type="text" id="p3-K2-B35" autocomplete="off"><span class="units">1/in</span></div><button class="check-btn" onclick="HW.check('p3','K2')">Check</button></div>
+        <div class="feedback" id="p3-K2-fb"></div><div class="hint">Hint: B<sub>11</sub> = (y&prime;&minus;b)/4ab, B<sub>22</sub> = (x&prime;&minus;a)/4ab, B<sub>35</sub> = (x&prime;+a)/4ab.</div>
+      </div>
+      <div class="step" id="p3-step-K3">
+        <div class="step-title">Step K3. K<sup>e</sup> (full 2&times;2 integration): first block</div>
+        <div class="step-prompt">Sum the four Gauss-point contributions t&middot;a&middot;b&middot;[B]<sup>T</sup>[D][B] and give K<sub>11</sub>, K<sub>12</sub>, K<sub>22</sub>.</div>
+        <div class="step-inputs"><div class="input-group"><label>K<sub>11</sub> =</label><input type="text" id="p3-K3-K11" autocomplete="off"><span class="units">kip/in</span></div><div class="input-group"><label>K<sub>12</sub> =</label><input type="text" id="p3-K3-K12" autocomplete="off"><span class="units">kip/in</span></div><div class="input-group"><label>K<sub>22</sub> =</label><input type="text" id="p3-K3-K22" autocomplete="off"><span class="units">kip/in</span></div><button class="check-btn" onclick="HW.check('p3','K3')">Check</button></div>
+        <div class="feedback" id="p3-K3-fb"></div>
+      </div>
+      <div class="step" id="p3-step-K4">
+        <div class="step-title">Step K4. K<sup>e</sup>: far-node coupling</div>
+        <div class="step-prompt">Give K<sub>15</sub> (u<sub>1</sub>&ndash;u<sub>3</sub>) and K<sub>18</sub> (u<sub>1</sub>&ndash;v<sub>4</sub>).</div>
+        <div class="step-inputs"><div class="input-group"><label>K<sub>15</sub> =</label><input type="text" id="p3-K4-K15" autocomplete="off"><span class="units">kip/in</span></div><div class="input-group"><label>K<sub>18</sub> =</label><input type="text" id="p3-K4-K18" autocomplete="off"><span class="units">kip/in</span></div><button class="check-btn" onclick="HW.check('p3','K4')">Check</button></div>
+        <div class="feedback" id="p3-K4-fb"></div>
+      </div>
+      <div class="step" id="p3-step-K5">
+        <div class="step-title">Step K5. Reduced (1-point) integration</div>
+        <div class="step-prompt">The 1-point rule samples [B] only at the centroid with a single weight W. Enter W and the resulting K<sub>11</sub> = t&middot;W&middot;a&middot;b&middot;(B<sup>T</sup>DB)<sub>11</sub> at (0, 0).</div>
+        <div class="step-inputs"><div class="input-group"><label>W =</label><input type="text" id="p3-K5-W" autocomplete="off"><span class="units"></span></div><div class="input-group"><label>K<sub>11</sub> (1-pt) =</label><input type="text" id="p3-K5-K11" autocomplete="off"><span class="units">kip/in</span></div><button class="check-btn" onclick="HW.check('p3','K5')">Check</button></div>
+        <div class="feedback" id="p3-K5-fb"></div><div class="hint">Hint: The weights must add to 4, the area of the parent square [&minus;1, 1]&sup2;.</div>
+      </div>
+      <div class="step" id="p3-step-K6">
+        <div class="step-title">Step K6. Zero eigenvalues</div>
+        <div class="step-prompt">How many zero eigenvalues does [K<sup>e</sup>] have with (i) full 2&times;2 integration and (ii) 1-point integration? (Rigid-body modes + hourglass modes.)</div>
+        <div class="step-inputs"><div class="input-group"><label>full 2&times;2 =</label><input type="text" id="p3-K6-zf" autocomplete="off"><span class="units"></span></div><div class="input-group"><label>1-point =</label><input type="text" id="p3-K6-zr" autocomplete="off"><span class="units"></span></div><button class="check-btn" onclick="HW.check('p3','K6')">Check</button></div>
+        <div class="feedback" id="p3-K6-fb"></div><div class="hint">Hint: rank of the 1-point matrix &le; 3 (the size of [B(0,0)]'s rows); the element has 8 DOFs.</div>
+      </div>
+    </div>
+    <div class="part-section">
+      <div class="part-header"><h2>Part 4 &mdash; Loads and Energy</h2><div class="part-score">Score: <span id="p3-score-L">0.0</span> / <span id="p3-max-L">0</span></div></div>
+      
+      <div class="step" id="p3-step-L1">
+        <div class="step-title">Step L1. Consistent nodal loads from the top-edge traction</div>
+        <div class="step-prompt">The uniform traction p acts on edge 3&ndash;4 (length 2a, thickness t). Using {f<sup>e</sup>} = &int;[N]<sup>T</sup>{p}dS, give the nodal forces F<sub>3y</sub> and F<sub>4y</sub>.</div>
+        <div class="step-inputs"><div class="input-group"><label>F<sub>3y</sub> =</label><input type="text" id="p3-L1-F3y" autocomplete="off"><span class="units">kip</span></div><div class="input-group"><label>F<sub>4y</sub> =</label><input type="text" id="p3-L1-F4y" autocomplete="off"><span class="units">kip</span></div><button class="check-btn" onclick="HW.check('p3','L1')">Check</button></div>
+        <div class="feedback" id="p3-L1-fb"></div><div class="hint">Hint: Along the edge N<sub>3</sub> and N<sub>4</sub> are linear and each integrates to (2a)/2, so the load splits equally.</div>
+      </div>
+      <div class="step" id="p3-step-L2">
+        <div class="step-title">Step L2. Strain energy</div>
+        <div class="step-prompt">Using your full-integration [K<sup>e</sup>] and the given displacements, compute U = &frac12;{u<sup>e</sup>}<sup>T</sup>[K<sup>e</sup>]{u<sup>e</sup>}.</div>
+        <div class="step-inputs"><div class="input-group"><label>U =</label><input type="text" id="p3-L2-U" autocomplete="off"><span class="units">kip&middot;in</span></div><button class="check-btn" onclick="HW.check('p3','L2')">Check</button></div>
+        <div class="feedback" id="p3-L2-fb"></div>
+      </div>
+    </div>
+    </div>
+
+<script>
+      // ═══════════════════════════════════════════
+      //  SHARED / GLOBAL SCORE AGGREGATION
+      // ═══════════════════════════════════════════
+      // iGrade: 0 (default) = student mode; 1 = instructor/debug mode, which exposes the answer-key hooks (window.__p2key, window.__p3key, HW.engines[*].getSteps); evaluated once at load, so set it to 1 in the source BEFORE loading the page (changing it at runtime has no effect) - never distribute with 1.
+      var iGrade = 0
+
+      var p1Total = 0, p2Total = 0, p3Total = 0
+
+      window.resumeBaselineScore = 0
+
+      window.hwClamp = function (v, lo, hi) {
+        v = Number(v)
+        if (!isFinite(v)) v = 0
+        return Math.max(lo, Math.min(hi, v))
+      }
+
+      // Shared helper for clamping a single sub-tab's running score into
+      // [0, max]. Every place that writes tabScores.<key> should route the
+      // value through this so no tab can drift negative or over its cap.
+      window.clampScore = function (v, max) {
+        v = Number(v)
+        if (!isFinite(v)) v = 0
+        return Math.max(0, Math.min(max, v))
+      }
+
+      // ═══════════════════════════════════════════
+      //  SHARED SIGNIFICANT-FIGURE TOLERANCE HELPERS
+      //  Used by both Problems 2 and 3 to grade non-integer numeric answers to a fixed number of
+      //  significant figures instead of requiring exact equality.
+      // ═══════════════════════════════════════════
+      window.isEffectivelyInteger = function (v) {
+        return isFinite(v) && Math.abs(v - Math.round(v)) < 1e-9
+      }
+      // Half a unit in the last significant figure, e.g. sigFigs=3 on
+      // expected=123.4 -> tolerance 0.05; expected=0 falls back to a fixed
+      // small tolerance since there's no magnitude to scale from.
+      window.sigFigsTolerance = function (expected, sigFigs) {
+        expected = Number(expected)
+        if (!isFinite(expected) || expected === 0) return 0.5 * Math.pow(10, -(sigFigs - 1))
+        const exponent = Math.floor(Math.log10(Math.abs(expected)))
+        return 0.5 * Math.pow(10, exponent - sigFigs + 1)
+      }
+      // Exact integers are graded exactly; everything else is graded to
+      // sigFigs significant figures.
+      window.toleranceForSigFigs = function (expected, sigFigs) {
+        return window.isEffectivelyInteger(expected) ? 1e-6 : window.sigFigsTolerance(expected, sigFigs)
+      }
+      window.closeEnoughSigFigs = function (userVal, expected, sigFigs) {
+        if (!isFinite(userVal) || !isFinite(expected)) return false
+        return Math.abs(userVal - expected) <= window.toleranceForSigFigs(expected, sigFigs)
+      }
+      // Placeholder text hinting how precisely to enter a non-integer
+      // expected answer; integers need no such hint.
+      window.sigFigsNote = function (expected, sigFigs) {
+        return window.isEffectivelyInteger(expected) ? "" : `${sigFigs} sig figs`
+      }
+
+      const HOMEWORK_GRAND_MAX = 60
+      const P1_MAX = 8
+      const P2_MAX = 28
+      const P3_MAX = 24
+
+      function updateGrandTotal() {
+        const baseline = window.hwClamp(window.resumeBaselineScore || 0, 0, HOMEWORK_GRAND_MAX)
+        const p1c = window.hwClamp(p1Total, 0, P1_MAX)
+        const p2c = window.hwClamp(p2Total, 0, P2_MAX)
+        const p3c = window.hwClamp(p3Total, 0, P3_MAX)
+        const total = window.hwClamp(baseline + p1c + p2c + p3c, 0, HOMEWORK_GRAND_MAX)
+        document.getElementById('grand-total').textContent = total.toFixed(1)
+        document.getElementById('summary-p1-score').textContent = p1c.toFixed(1)
+        document.getElementById('summary-p2-score').textContent = p2c.toFixed(1)
+        document.getElementById('summary-p3-score').textContent = p3c.toFixed(1)
+        const baselineRow = document.getElementById('summary-baseline-row')
+        if (baseline > 0) {
+          baselineRow.classList.remove('hidden')
+          document.getElementById('summary-baseline-score').textContent = baseline.toFixed(1)
+        } else {
+          baselineRow.classList.add('hidden')
+        }
+      }
+
+      window.reportP1Total = function (t) { p1Total = t; updateGrandTotal() }
+      window.reportP2Total = function (t) { p2Total = t; updateGrandTotal() }
+      window.reportP3Total = function (t) { p3Total = t; updateGrandTotal() }
+
+      function switchMainTab(name) {
+        document.querySelectorAll('.main-tab-content').forEach(el => el.classList.remove('active'))
+        document.querySelectorAll('#main-tab-bar button').forEach(el => el.classList.remove('active'))
+        document.getElementById('main-tab-' + name).classList.add('active')
+        const idx = { summary: 0, p1: 1, p2: 2, p3: 3 }[name]
+        document.querySelectorAll('#main-tab-bar button')[idx].classList.add('active')
+      }
+    </script>
+
+<script>
+      // ═══════════════════════════════════════════
+      //  LIGHTWEIGHT "CODED SCORE" GENERATOR / DECODER
+      // ═══════════════════════════════════════════
+      (function () {
+        const HOMEWORK_ID = "HW7"
+        const HOMEWORK_MAX = 60
+        const CODE_LIFETIME_MS = 14 * 24 * 60 * 60 * 1000 // 14 days
+        const SALT = "fem-hw7-2026-v1"
+
+        function simpleHash(str) {
+          let h = 0
+          for (let i = 0; i < str.length; i++) { h = (Math.imul(31, h) + str.charCodeAt(i)) | 0 }
+          return (h >>> 0).toString(36).toUpperCase()
+        }
+
+        async function sha256Hex(str) {
+          const bytes = new TextEncoder().encode(str)
+          const digest = await crypto.subtle.digest("SHA-256", bytes)
+          return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, "0")).join("")
+        }
+
+        function sanitize(field) { return String(field).replace(/[|~]/g, " ").trim() }
+        function b64EncodeUnicode(str) { return btoa(unescape(encodeURIComponent(str))) }
+        function b64DecodeUnicode(str) { return decodeURIComponent(escape(atob(str))) }
+
+        const P1_KEYS = ["dps", "dpe", "eq", "gauss"]
+        const P2_KEYS = ["cst"]
+        const P3_KEYS = ["q4"]
+
+        function clamp(v, lo, hi) {
+          return window.hwClamp ? window.hwClamp(v, lo, hi) : Math.max(lo, Math.min(hi, Number(v) || 0))
+        }
+
+        function csvFromScores(getterName, keys, max) {
+          const getter = window[getterName]
+          const scores = typeof getter === "function" ? getter() : {}
+          return keys.map(k => clamp(scores[k] || 0, 0, max).toFixed(1)).join(",")
+        }
+
+        function zipKeysClamped(keys, values) {
+          const obj = {}
+          keys.forEach((k, i) => { obj[k] = clamp(values[i] || 0, 0, Infinity) })
+          return obj
+        }
+
+        window.generateSubmissionCode = async function () {
+          const nameEl = document.getElementById("student-name-input")
+          const idEl = document.getElementById("student-id-input")
+          const warnEl = document.getElementById("code-warning-msg")
+          const name = sanitize(nameEl.value)
+          const id = sanitize(idEl.value)
+
+          if (!name || !id) {
+            warnEl.style.color = ""
+            warnEl.textContent = "Please enter both your name and your Canvas login/ID before generating a code."
+            warnEl.classList.remove("hidden")
+            document.getElementById("code-output-row").classList.add("hidden")
+            return
+          }
+          warnEl.classList.add("hidden")
+
+          const scoreText = document.getElementById("grand-total").textContent
+          const score = clamp(parseFloat(scoreText) || 0, 0, HOMEWORK_MAX)
+
+          if (score === 0) {
+            const proceed = confirm(
+              "Your total score is currently 0.0 — you haven't answered anything yet. " +
+              "Generate a submission code anyway?"
+            )
+            if (!proceed) return
+          }
+
+          const p1csv = csvFromScores("p1GetTabScores", P1_KEYS, 8)
+          const p2csv = csvFromScores("p2GetTabScores", P2_KEYS, 28)
+          const p3csv = csvFromScores("p3GetTabScores", P3_KEYS, 24)
+          const timestamp = Date.now()
+
+          const payload = `${name}|${id}|${p1csv}|${p2csv}|${p3csv}|${HOMEWORK_MAX}|${score.toFixed(1)}|${timestamp}`
+          const encodedPayload = b64EncodeUnicode(payload)
+          const digest = await sha256Hex(payload + "|" + SALT)
+          const checksum = digest.slice(0, 12)
+          const code = `${HOMEWORK_ID}-${encodedPayload}-${checksum}`
+
+          document.getElementById("submission-code-output").value = code
+          document.getElementById("code-output-row").classList.remove("hidden")
+          document.getElementById("code-score-snapshot").textContent = score.toFixed(1)
+          updatePrintHeader(name, id)
+
+          const copied = await attemptCopyToClipboard(code)
+          document.getElementById("confirm-name").textContent = name
+          document.getElementById("confirm-id").textContent = id
+          document.getElementById("confirm-score").textContent = `${score.toFixed(1)} / ${HOMEWORK_MAX}`
+          document.getElementById("confirm-datetime").textContent = new Date(timestamp).toLocaleString()
+          const copyStatusEl = document.getElementById("confirm-copy-status")
+          if (copied) {
+            copyStatusEl.textContent = "\u2713 Code copied to clipboard."
+            copyStatusEl.className = "copy-status copied"
+          } else {
+            copyStatusEl.textContent = "Code generated \u2014 click \"Copy\" above, then paste it into Canvas."
+            copyStatusEl.className = "copy-status manual"
+          }
+          document.getElementById("code-confirmation").classList.remove("hidden")
+
+          if (!nameEl.readOnly) lockIdentityFields()
+        }
+
+        async function attemptCopyToClipboard(text) {
+          const output = document.getElementById("submission-code-output")
+          output.select()
+          output.setSelectionRange(0, 99999)
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            try { await navigator.clipboard.writeText(text); return true }
+            catch (e) { try { return document.execCommand("copy") } catch (e2) { return false } }
+          }
+          try { return document.execCommand("copy") } catch (e) { return false }
+        }
+
+        window.copySubmissionCode = async function () {
+          const output = document.getElementById("submission-code-output")
+          const copied = await attemptCopyToClipboard(output.value)
+          const copyStatusEl = document.getElementById("confirm-copy-status")
+          if (copyStatusEl && !document.getElementById("code-confirmation").classList.contains("hidden")) {
+            if (copied) {
+              copyStatusEl.textContent = "\u2713 Code copied to clipboard."
+              copyStatusEl.className = "copy-status copied"
+            } else {
+              copyStatusEl.textContent = "Could not copy automatically \u2014 select the code above and copy it manually."
+              copyStatusEl.className = "copy-status manual"
+            }
+          }
+        }
+
+        function lockIdentityFields() {
+          const nameEl = document.getElementById("student-name-input")
+          const idEl = document.getElementById("student-id-input")
+          nameEl.readOnly = true; idEl.readOnly = true
+          nameEl.classList.add("locked"); idEl.classList.add("locked")
+          document.getElementById("identity-locked-note").classList.remove("hidden")
+        }
+
+        function updatePrintHeader(name, id) {
+          const nameSpan = document.getElementById("print-header-name")
+          const idSpan = document.getElementById("print-header-id")
+          if (nameSpan) nameSpan.textContent = name || ""
+          if (idSpan) idSpan.textContent = id || ""
+        }
+
+        window.printSummary = function () {
+          const nameEl = document.getElementById("student-name-input")
+          const idEl = document.getElementById("student-id-input")
+          updatePrintHeader(nameEl ? nameEl.value : "", idEl ? idEl.value : "")
+          const dateSpan = document.getElementById("print-header-date")
+          if (dateSpan) dateSpan.textContent = new Date().toLocaleString()
+          window.print()
+        }
+
+        window.unlockIdentityAndReset = function () {
+          const sure = confirm(
+            "This unlocks your name/ID fields and completely resets your progress on this " +
+            "page — every sub-tab starts over from scratch, as if you'd just opened it fresh. " +
+            "This can't be undone (unless you have a code saved to resume from). Continue?"
+          )
+          if (!sure) return
+          location.reload()
+        }
+
+        window.resumeFromCode = async function () {
+          const codeInput = document.getElementById("resume-code-input")
+          const warnEl = document.getElementById("resume-warning-msg")
+          const nameEl = document.getElementById("student-name-input")
+          const idEl = document.getElementById("student-id-input")
+
+          if (nameEl.readOnly) {
+            warnEl.textContent = "Your name and ID are already locked for this session. Use \"Unlock Identity / Start Over\" below to resume with a different code."
+            warnEl.classList.remove("hidden")
+            return
+          }
+
+          const decoded = await decodeOneCode(codeInput.value.trim())
+          if (!decoded || decoded.error) {
+            warnEl.textContent = decoded ? decoded.error : "That doesn't look like a valid code. Check that you copied it in full."
+            warnEl.classList.remove("hidden")
+            return
+          }
+          if (!decoded.valid) {
+            warnEl.textContent = "This code failed verification (checksum mismatch) and can't be used to resume. Paste it exactly as it was generated, or contact your instructor."
+            warnEl.classList.remove("hidden")
+            return
+          }
+          if (decoded.expired) {
+            warnEl.textContent = "This code has expired (codes are valid for 14 days after they're generated). Please contact your instructor if you need to resume old progress."
+            warnEl.classList.remove("hidden")
+            return
+          }
+          if (String(decoded.max) !== String(HOMEWORK_MAX)) {
+            warnEl.textContent = `This code was generated for a different version of the assignment (max ${decoded.max}, current max ${HOMEWORK_MAX}) and can't be used to resume here.`
+            warnEl.classList.remove("hidden")
+            return
+          }
+
+          warnEl.classList.add("hidden")
+          nameEl.value = decoded.name
+          idEl.value = decoded.id
+          updatePrintHeader(decoded.name, decoded.id)
+
+          if (decoded.breakdown) {
+            window.resumeBaselineScore = 0
+            if (window.p1SetTabScores) window.p1SetTabScores(decoded.breakdown.p1)
+            if (window.p2SetTabScores) window.p2SetTabScores(decoded.breakdown.p2)
+            if (decoded.breakdown.p3 && window.p3SetTabScores) window.p3SetTabScores(decoded.breakdown.p3)
+          } else {
+            window.resumeBaselineScore = clamp(parseFloat(decoded.score) || 0, 0, HOMEWORK_MAX)
+            if (typeof updateGrandTotal === "function") updateGrandTotal()
+          }
+
+          lockIdentityFields()
+
+          const noteEl = document.getElementById("code-warning-msg")
+          noteEl.classList.remove("hidden")
+          noteEl.style.color = "#1565c0"
+          const startScore = clamp(parseFloat(decoded.score) || 0, 0, HOMEWORK_MAX)
+          noteEl.textContent = `Resumed as ${decoded.name} with a restored score of ${startScore.toFixed(1)} / ${decoded.max}. ` +
+            `Any new work you do now adds on top of that restored total — generate a new code when you're done.`
+          if (!decoded.breakdown || !decoded.breakdown.p3) noteEl.textContent += ' This code predates Problem 3, so your Problem 3 score starts from zero.'
+        }
+
+        window.toggleInstructorPanel = function () {
+          document.getElementById("instructor-panel").classList.toggle("open")
+        }
+
+        async function decodeOneCode(rawLine) {
+          const match = rawLine.match(/HW\d*-[A-Za-z0-9+/=]+-[A-Za-z0-9]+/)
+          if (!match) return null
+          const parts = match[0].split("-")
+          if (parts.length !== 3) return null
+          const [prefix, encodedPayload, checksum] = parts
+          let payload
+          try { payload = b64DecodeUnicode(encodedPayload) }
+          catch (e) { return { raw: rawLine, error: "Could not decode (malformed code)." } }
+          const fields = payload.split("|")
+
+          let valid, scheme
+          if (/^[0-9a-f]{12}$/i.test(checksum)) {
+            scheme = "sha256"
+            const digest = await sha256Hex(payload + "|" + SALT)
+            valid = digest.slice(0, 12).toLowerCase() === checksum.toLowerCase()
+          } else {
+            scheme = "legacy"
+            const expected = simpleHash(payload + "|" + SALT).slice(0, 6)
+            valid = expected === checksum
+          }
+
+          if (fields.length === 8) {
+            const [name, id, p1csv, p2csv, p3csv, max, score, timestampStr] = fields
+            const breakdown = {
+              p1: zipKeysClamped(P1_KEYS, p1csv.split(",").map(Number)),
+              p2: zipKeysClamped(P2_KEYS, p2csv.split(",").map(Number)),
+              p3: zipKeysClamped(P3_KEYS, p3csv.split(",").map(Number)),
+            }
+            const timestamp = parseInt(timestampStr, 10)
+            const hasTimestamp = isFinite(timestamp)
+            const expired = hasTimestamp && (Date.now() - timestamp > CODE_LIFETIME_MS)
+            return { raw: rawLine, prefix, name, id, score, max, valid, breakdown, timestamp: hasTimestamp ? timestamp : null, expired, scheme }
+          }
+          if (fields.length === 6) {
+            const [name, id, p1csv, p2csv, max, score] = fields
+            const breakdown = {
+              p1: zipKeysClamped(P1_KEYS, p1csv.split(",").map(Number)),
+              p2: zipKeysClamped(P2_KEYS, p2csv.split(",").map(Number)),
+            }
+            return { raw: rawLine, prefix, name, id, score, max, valid, breakdown, timestamp: null, expired: false, scheme }
+          }
+          if (fields.length === 4) {
+            const [name, id, score, max] = fields
+            return { raw: rawLine, prefix, name, id, score, max, valid, timestamp: null, expired: false, scheme }
+          }
+          return { raw: rawLine, error: "Could not decode (malformed payload)." }
+        }
+
+        function formatBreakdownRow(label, obj, max) {
+          const total = Object.values(obj).reduce((a, b) => a + b, 0)
+          const parts = Object.entries(obj).map(([k, v]) => `${k}: ${v.toFixed(1)}`).join(", ")
+          return `<div class="breakdown-row"><strong>${label} (${total.toFixed(1)} / ${max}):</strong> ${parts}</div>`
+        }
+
+        window.decodeSubmissionCodes = async function () {
+          const input = document.getElementById("decode-input").value
+          const lines = input.split("\n").map(l => l.trim()).filter(Boolean)
+          const resultsEl = document.getElementById("decode-results")
+
+          if (lines.length === 0) {
+            resultsEl.innerHTML = '<p class="code-warning">Paste at least one code above.</p>'
+            return
+          }
+
+          resultsEl.innerHTML = '<p class="code-note">Decoding\u2026</p>'
+          const decoded = await Promise.all(lines.map(decodeOneCode))
+
+          let html = ""
+          decoded.forEach(d => {
+            if (!d || d.error) {
+              html += `<div class="decode-card invalid"><p class="code-warning">${d ? d.error : "Not a recognized code"}: "${(d ? d.raw : "").replace(/</g, "&lt;")}"</p></div>`
+              return
+            }
+            let statusClass, statusText
+            if (!d.valid) { statusClass = "invalid"; statusText = "Invalid / Tampered" }
+            else if (d.expired) { statusClass = "expired"; statusText = "Expired" }
+            else { statusClass = "valid"; statusText = "Valid" }
+
+            const pct = ((parseFloat(d.score) / parseFloat(d.max)) * 100).toFixed(1)
+            const generatedText = d.timestamp ? new Date(d.timestamp).toLocaleString() : "Not recorded (older code format, no expiration)"
+            const expiresText = d.timestamp ? new Date(d.timestamp + CODE_LIFETIME_MS).toLocaleString() : "N/A \u2014 expiration not enabled for this code"
+
+            let breakdownHtml
+            if (d.breakdown) {
+              breakdownHtml = formatBreakdownRow("Problem 1", d.breakdown.p1, 8) +
+                formatBreakdownRow("Problem 2", d.breakdown.p2, 28)
+              breakdownHtml += d.breakdown.p3
+                ? formatBreakdownRow("Problem 3", d.breakdown.p3, 24)
+                : '<div class="breakdown-row">Problem 3: not available \u2014 this code predates Problem 3.</div>'
+            } else {
+              breakdownHtml = '<div class="breakdown-row">Not available \u2014 this is an older lump-total code with no per-problem breakdown.</div>'
+            }
+
+            html += `
+              <div class="decode-card ${statusClass}">
+                <div class="decode-card-header">
+                  <span class="decode-name">${d.name}</span>
+                  <span class="decode-status-badge ${statusClass}">${statusText}</span>
+                </div>
+                <table class="decode-info-table">
+                  <tr><td class="label">ID / Login:</td><td>${d.id}</td></tr>
+                  <tr><td class="label">Total Score:</td><td>${parseFloat(d.score).toFixed(1)} / ${d.max} (${pct}%)</td></tr>
+                  <tr><td class="label">Generated:</td><td>${generatedText}</td></tr>
+                  <tr><td class="label">Expires:</td><td>${expiresText}</td></tr>
+                </table>
+                <div class="decode-breakdown">${breakdownHtml}</div>
+              </div>`
+          })
+
+          html += '<p class="code-note">"Invalid / Tampered" codes have a checksum that doesn\'t match the payload \u2014 they may have been hand-edited. "Expired" codes are older than the 14-day validity window. Review both before entering a grade.</p>'
+          resultsEl.innerHTML = html
+
+          window._decodedRecords = decoded.filter(d => d && !d.error)
+          document.getElementById("csv-step").classList.toggle("hidden", window._decodedRecords.length === 0)
+        }
+
+        function parseCSV(text) {
+          const rows = []
+          let row = [], field = "", inQuotes = false
+          for (let i = 0; i < text.length; i++) {
+            const c = text[i]
+            if (inQuotes) {
+              if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++ } else { inQuotes = false } }
+              else { field += c }
+            } else {
+              if (c === '"') { inQuotes = true }
+              else if (c === ",") { row.push(field); field = "" }
+              else if (c === "\r") { /* skip */ }
+              else if (c === "\n") { row.push(field); rows.push(row); row = []; field = "" }
+              else { field += c }
+            }
+          }
+          if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row) }
+          return rows.filter(r => !(r.length === 1 && r[0] === ""))
+        }
+
+        function unparseCSV(rows) {
+          return rows.map(row => row.map(field => {
+            const f = field == null ? "" : String(field)
+            return /[",\n]/.test(f) ? '"' + f.replace(/"/g, '""') + '"' : f
+          }).join(",")).join("\r\n")
+        }
+
+        function downloadTextFile(text, filename, mime) {
+          const blob = new Blob([text], { type: mime })
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement("a")
+          a.href = url; a.download = filename
+          document.body.appendChild(a); a.click(); document.body.removeChild(a)
+          URL.revokeObjectURL(url)
+        }
+
+        function normalizeName(n) {
+          return n.toLowerCase().replace(/[^a-z\s]/g, " ").split(/\s+/).filter(Boolean).sort().join(" ")
+        }
+
+        window.handleGradebookCsvUpload = function (event) {
+          const file = event.target.files[0]
+          const summaryEl = document.getElementById("csv-match-summary")
+          if (!file) return
+          const reader = new FileReader()
+          reader.onload = function (e) {
+            const rows = parseCSV(e.target.result)
+            if (rows.length < 2) {
+              summaryEl.innerHTML = '<p class="code-warning">Could not read this CSV (too few rows).</p>'
+              return
+            }
+            window._gradebookCsvOriginal = { header: rows[0], rows: rows.slice(1) }
+            const excludeExact = ["student", "id", "sis user id", "sis login id", "section", "root account", "integration id"]
+            const excludeContains = ["current score", "final score", "current grade", "final grade", "unposted"]
+            const select = document.getElementById("csv-assignment-column")
+            select.innerHTML = ""
+            rows[0].forEach((h, idx) => {
+              const hl = h.trim().toLowerCase()
+              if (excludeExact.includes(hl)) return
+              if (excludeContains.some(x => hl.includes(x))) return
+              const opt = document.createElement("option")
+              opt.value = idx; opt.textContent = h
+              select.appendChild(opt)
+            })
+            document.getElementById("csv-column-picker").classList.remove("hidden")
+            summaryEl.innerHTML = ""
+          }
+          reader.readAsText(file)
+        }
+
+        window.fillGradebookCsv = function () {
+          const decoded = window._decodedRecords || []
+          const summaryEl = document.getElementById("csv-match-summary")
+          const original = window._gradebookCsvOriginal
+          if (decoded.length === 0) {
+            summaryEl.innerHTML = '<p class="code-warning">Decode some codes in Step 1 first.</p>'
+            return
+          }
+          if (!original) {
+            summaryEl.innerHTML = '<p class="code-warning">Upload a gradebook CSV first.</p>'
+            return
+          }
+
+          const modeInput = document.querySelector('input[name="csv-fill-mode"]:checked')
+          const mode = modeInput ? modeInput.value : "overwrite"
+
+          const header = original.header.slice()
+          const rows = original.rows.map(row => row.slice())
+
+          const colIdx = parseInt(document.getElementById("csv-assignment-column").value, 10)
+          const headerLower = header.map(h => h.trim().toLowerCase())
+          const idColCandidates = ["sis login id", "sis user id", "id", "email", "email address", "login id", "login", "username", "canvas id"]
+          const idColIdxs = []
+          idColCandidates.forEach(name => { const i = headerLower.indexOf(name); if (i !== -1) idColIdxs.push(i) })
+          const studentColIdx = headerLower.indexOf("student")
+
+          const matched = [], skipped = [], mismatched = [], expiredList = [], unmatched = []
+
+          decoded.forEach(d => {
+            if (d.expired) { expiredList.push(d.name); return }
+            let matchedRow = null
+            for (const row of rows) {
+              for (const ci of idColIdxs) {
+                if (row[ci] && row[ci].trim().toLowerCase() === d.id.trim().toLowerCase()) { matchedRow = row; break }
+              }
+              if (matchedRow) break
+            }
+            if (!matchedRow && studentColIdx !== -1) {
+              const target = normalizeName(d.name)
+              for (const row of rows) {
+                if (row[studentColIdx] && normalizeName(row[studentColIdx]) === target) { matchedRow = row; break }
+              }
+            }
+            if (!matchedRow) { unmatched.push(d.name); return }
+            const existing = matchedRow[colIdx]
+            if (mode === "blank" && existing && String(existing).trim() !== "") { skipped.push(d.name); return }
+            matchedRow[colIdx] = d.score
+            matched.push(d.name)
+            if (!d.valid) mismatched.push(d.name)
+          })
+
+          const csvText = unparseCSV([header, ...rows])
+          downloadTextFile(csvText, "gradebook_updated.csv", "text/csv")
+
+          const modeLabel = mode === "blank" ? "only blank cells" : "overwriting existing scores"
+          let summary = `<p class="code-note">Mode: <strong>${modeLabel}</strong>. ` +
+            `Filled <strong>${matched.length}</strong> of ${decoded.length} decoded score(s) into "${header[colIdx]}." ` +
+            `A file named <strong>gradebook_updated.csv</strong> has been downloaded \u2014 re-upload it via Canvas Grades &rarr; Import.</p>`
+          summary += '<ul class="csv-summary-list">'
+          summary += `<li>Matched &amp; filled: ${matched.length}</li>`
+          if (skipped.length) summary += `<li>Skipped (already had a value, blank-only mode): ${skipped.length} \u2014 ${skipped.join(", ")}</li>`
+          if (mismatched.length) summary += `<li>Filled but checksum MISMATCH (verify manually): ${mismatched.length} \u2014 ${mismatched.join(", ")}</li>`
+          if (expiredList.length) summary += `<li>Not filled, code EXPIRED: ${expiredList.length} \u2014 ${expiredList.join(", ")}</li>`
+          if (unmatched.length) summary += `<li>Could not auto-match (enter manually): ${unmatched.length} \u2014 ${unmatched.join(", ")}</li>`
+          summary += '</ul>'
+          summaryEl.innerHTML = summary
+        }
+      })();
+    </script>
+
+<script>
+// ═══════════════════════════════════════════
+//  GENERIC STEP-CHECK ENGINE (shared by Problems 1–3)
+// ═══════════════════════════════════════════
+window.HW = { engines: {} }
+// Evaluated once at load time. To enable instructor/debug mode, change iGrade to 1 in the source before loading the page;
+// changing it at runtime has no effect. (Debug hooks: window.__p2key, window.__p3key, HW.engines[*].getSteps.)
+const DEBUG_MODE = (typeof iGrade !== 'undefined' && iGrade === 1)
+function randInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a }
+function choice(arr) { return arr[randInt(0, arr.length - 1)] }
+function nice(v, d) { return String(parseFloat(Number(v).toFixed(d === undefined ? 6 : d))) }
+function absScale(arr, frac, floor) { return Math.max(floor || 1e-12, frac * Math.max.apply(null, arr.map(Math.abs))) }
+
+// ═══════════════════════════════════════════
+//  CSV UPLOAD SUPPORT (fills the answer boxes of vector / matrix steps)
+// ═══════════════════════════════════════════
+// csv spec on a step:  { kind:'matrix', rows:R, cols:C, map:{inputKey:[r,c]} }
+//                      { kind:'vector', map:{ length:{inputKey:index} } }   (0-based)
+const csvMat = (rows, cols, map) => ({ kind: 'matrix', rows, cols, map })
+const csvVec = map => ({ kind: 'vector', map })
+function csvNumberRows(text) {
+  const rows = []
+  text.replace(/^\uFEFF/, '').split(/\r?\n/).forEach(line => {
+    const nums = line.split(/[,;\t ]+/).map(t => t.trim()).filter(t => /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/.test(t))
+    // Only rows with NO numeric token (headers / labels) are dropped. Every row that has at least one
+    // number is kept with whatever numbers it has, so ragged files still trigger an accurate 'found r row(s) of m number(s)' error.
+    if (nums.length) rows.push(nums)
+  })
+  return rows
+}
+function csvDescribe(c) {
+  if (c.kind === 'matrix') return 'a ' + c.rows + '\u00d7' + c.cols + ' matrix (' + c.rows + ' rows, ' + c.cols + ' comma-separated columns)'
+  const lens = Object.keys(c.map).map(Number)
+  return 'one list of ' + lens.join(' or ') + ' numbers (one column, one row, or any layout)'
+}
+
+function createEngine(prefix, cfg) {
+  // cfg: tabs{key:max}, groups{name:[ids]}, groupTab{name:key}, build(): STEPS, report(totalFn)
+  let STEPS = {}, stepScore = {}
+  const base = {}, tabScores = {}
+  Object.keys(cfg.tabs).forEach(k => { base[k] = 0; tabScores[k] = 0 })
+  const parse = s => (s === null || s === undefined) ? NaN : parseFloat(String(s).trim().replace(/,/g, ''))
+
+  function updateScores() {
+    const sums = {}
+    Object.keys(cfg.tabs).forEach(k => { sums[k] = 0 })
+    Object.entries(cfg.groups).forEach(([g, ids]) => {
+      let gt = 0, gm = 0
+      ids.forEach(id => { gm += STEPS[id].points; gt += stepScore[id] || 0 })
+      sums[cfg.groupTab[g]] += gt
+      const te = document.getElementById(prefix + '-score-' + g), me = document.getElementById(prefix + '-max-' + g)
+      if (te) te.textContent = gt.toFixed(1)
+      if (me) me.textContent = gm
+    })
+    let total = 0
+    Object.keys(cfg.tabs).forEach(k => { tabScores[k] = window.clampScore(base[k] + sums[k], cfg.tabs[k]); total += tabScores[k] })
+    const tot = document.getElementById(prefix + '-total-score')
+    if (tot) tot.textContent = total.toFixed(1)
+    if (cfg.report) cfg.report(total)
+  }
+  const failed = {}   // failed (non-empty) attempts per step; gates the "Reveal expected value" control
+  function check(id) {
+    const def = STEPS[id], n = def.inputs.length
+    let allVal = true, allFmt = true, nOK = 0, anyFilled = false; const vals = {}
+    def.inputs.forEach(i => {
+      const el = document.getElementById(prefix + '-' + id + '-' + i.k)
+      const v = parse(el.value); vals[i.k] = v
+      if (String(el.value).trim() !== '') anyFilled = true
+      const valOK = !isNaN(v) && Math.abs(v - i.exp) <= precTol(i)
+      const fmtOK = valOK ? precisionOK(i, el.value) : true
+      el.classList.remove('correct', 'incorrect'); el.classList.add(valOK && fmtOK ? 'correct' : 'incorrect')
+      if (!valOK) allVal = false
+      if (!fmtOK) allFmt = false
+      if (valOK && fmtOK) nOK++
+    })
+    const fb = document.getElementById(prefix + '-' + id + '-fb'), box = document.getElementById(prefix + '-step-' + id)
+    if (allVal && allFmt) {
+      fb.textContent = 'Correct!'; fb.className = 'feedback correct'; stepScore[id] = def.points; box.classList.add('done'); removeReveal(id)
+    } else {
+      let msg
+      if (n === 1) msg = allVal ? 'The value is right, but it is not reported to the required precision (see the note beside each box). Re-enter it with the required number of decimals.'
+                                 : 'Wrong answer \u2014 please revise it and press Check again (answers must match to the stated number of decimals).'
+      else msg = nOK + ' of ' + n + ' entries correct \u2014 ' + (allVal ? 'the highlighted values are right but need the required precision (see the note beside each box).' : 'fix the highlighted boxes.')
+      let extra = ''
+      if (!allVal && def.diagnose) { try { extra = def.diagnose(vals) || '' } catch (e) { extra = '' } }   // best-effort; never affects scoring
+      fb.textContent = msg + (extra ? ' ' + extra : ''); fb.className = 'feedback incorrect'; stepScore[id] = 0; box.classList.remove('done')
+      if (anyFilled) failed[id] = (failed[id] || 0) + 1
+      if (failed[id] > 0) ensureReveal(id)
+    }
+    updateScores()
+  }
+  function revealText(id) {
+    return STEPS[id].inputs.map(i => {
+      const el = document.getElementById(prefix + '-' + id + '-' + i.k), lab = el.parentNode.querySelector('label')
+      return (lab ? lab.textContent.replace(/\s*=\s*$/, '') : i.k) + ' = ' + revealValue(i)
+    }).join('   |   ') + '   (rounded to the required precision; revealing does not change your score)'
+  }
+  function ensureReveal(id) {
+    const box = document.getElementById(prefix + '-step-' + id); if (!box || box.querySelector('.reveal')) return
+    const d = document.createElement('details'); d.className = 'reveal'
+    d.innerHTML = '<summary>Reveal expected value</summary><div class="reveal-body"></div>'
+    d.addEventListener('toggle', () => { d.querySelector('.reveal-body').textContent = d.open ? revealText(id) : '' })
+    const fb = document.getElementById(prefix + '-' + id + '-fb'); fb.parentNode.insertBefore(d, fb.nextSibling)
+  }
+  function removeReveal(id) {
+    if (DEBUG_MODE) return   // instructor mode keeps the control visible on every step
+    const box = document.getElementById(prefix + '-step-' + id), d = box && box.querySelector('.reveal'); if (d) d.remove()
+  }
+  function resetUI() {
+    stepScore = {}; Object.keys(failed).forEach(k => delete failed[k])
+    document.querySelectorAll('[id^="' + prefix + '-step-"] .reveal').forEach(d => d.remove())
+    Object.values(cfg.groups).forEach(ids => ids.forEach(id => {
+      STEPS[id].inputs.forEach(inp => { const el = document.getElementById(prefix + '-' + id + '-' + inp.k); if (el) { el.value = ''; el.classList.remove('correct', 'incorrect') } })
+      const fb = document.getElementById(prefix + '-' + id + '-fb'); if (fb) { fb.textContent = ''; fb.className = 'feedback' }
+      const box = document.getElementById(prefix + '-step-' + id); if (box) box.classList.remove('done')
+    }))
+  }
+  function annotate() {
+    Object.keys(STEPS).forEach(id => STEPS[id].inputs.forEach(i => {
+      const el = document.getElementById(prefix + '-' + id + '-' + i.k); if (!el) return
+      el.placeholder = i.sci ? '0.' + '0'.repeat(i.dec) + 'e-4' : (i.dec === 0 ? 'integer' : '0.' + '0'.repeat(i.dec))
+      let sp = el.parentNode.querySelector('.prec')
+      if (!sp) { sp = document.createElement('span'); sp.className = 'prec'; el.parentNode.appendChild(sp) }
+      sp.textContent = '[' + precLabel(i) + ']'
+    }))
+  }
+  function addCsvRows() {
+    Object.keys(STEPS).forEach(id => {
+      const c = STEPS[id].csv, box = document.getElementById(prefix + '-step-' + id)
+      if (!c || !box || box.querySelector('.csv-row')) return
+      const row = document.createElement('div'); row.className = 'csv-row'
+      row.innerHTML = '<label class="csv-btn">&#128194; Upload CSV<input type="file" accept=".csv,.txt,text/csv,text/plain" style="display:none" onchange="HW.csv(\'' + prefix + '\',\'' + id + '\',this)"></label>' +
+        '<span class="csv-fmt">optional \u2014 fills the boxes from ' + csvDescribe(c) + '. Values are rounded to each box\'s required precision automatically.</span>'
+      const fb = document.getElementById(prefix + '-' + id + '-fb')
+      box.insertBefore(row, fb)
+    })
+  }
+  function loadCsv(id, fileInput) {
+    const def = STEPS[id], c = def.csv, f = fileInput.files && fileInput.files[0]
+    const fb = document.getElementById(prefix + '-' + id + '-fb')
+    if (!f) return
+    const rd = new FileReader()
+    rd.onload = e => {
+      const rows = csvNumberRows(String(e.target.result)); let err = ''
+      const get = {}
+      if (c.kind === 'matrix') {
+        if (rows.length !== c.rows || rows.some(r => r.length !== c.cols)) err = 'Expected ' + csvDescribe(c) + ', but found ' + rows.length + ' row(s) of ' + [...new Set(rows.map(r => r.length))].join('/') + ' number(s).'
+        else { Object.keys(c.map).forEach(k => { get[k] = rows[c.map[k][0]][c.map[k][1]] }) }
+      } else {
+        const flat = [].concat.apply([], rows), m = c.map[flat.length]
+        if (!m) err = 'Expected ' + csvDescribe(c) + ', but found ' + flat.length + ' number(s).'
+        else Object.keys(m).forEach(k => { get[k] = flat[m[k]] })
+      }
+      if (err) { fb.textContent = 'CSV not loaded: ' + err; fb.className = 'feedback incorrect'; fileInput.value = ''; return }
+      def.inputs.forEach(i => {
+        const el = document.getElementById(prefix + '-' + id + '-' + i.k)
+        if (get[i.k] !== undefined) {   // file values are rounded to this box's required precision
+          const x = parseFloat(get[i.k])
+          el.value = i.sci ? x.toExponential(i.dec) : x.toFixed(i.dec)
+          el.classList.remove('correct', 'incorrect')
+        }
+      })
+      fb.textContent = 'Loaded ' + Object.keys(get).length + ' value(s) from "' + f.name + '", rounded to the required precision. Review them, then press Check.'; fb.className = 'feedback info'
+      fileInput.value = ''
+    }
+    rd.readAsText(f)
+  }
+  function setSteps(s) { STEPS = s; annotate(); addCsvRows(); resetUI(); if (DEBUG_MODE) Object.keys(STEPS).forEach(ensureReveal); updateScores() }
+  const eng = { check, loadCsv, setSteps, updateScores,
+    getTabScores: () => Object.assign({}, tabScores),
+    setTabScores: sc => { Object.keys(cfg.tabs).forEach(k => { if (sc && sc[k] !== undefined) base[k] = window.clampScore(sc[k], cfg.tabs[k]) }); updateScores() } }
+  if (DEBUG_MODE) eng.getSteps = () => STEPS
+  HW.engines[prefix] = eng
+  return eng
+}
+HW.check = (prefix, id) => HW.engines[prefix].check(id)
+HW.csv = (prefix, id, el) => HW.engines[prefix].loadCsv(id, el)
+function bind(name, text) { document.querySelectorAll('[data-bind="' + name + '"]').forEach(el => { el.textContent = text }) }
+// inp(k, exp, dec, opts): dec = required decimal places.
+//   opts.sci  -> answer is graded in scientific form: dec = digits after the point in the mantissa (dec+1 significant figures)
+//   opts.abs  -> extra absolute tolerance (used where the exact answer is 0, e.g. equilibrium sums)
+//   opts.ref  -> reference magnitude used when exp is (numerically) zero in sci mode
+// Grading: (1) the entry must show at least the required precision, (2) its value must be within
+// +/-1 unit of the last required digit of the exact answer (dec = 0 means an exact integer match).
+function inp(k, exp, dec, opts) { return Object.assign({ k, exp, dec, sci: false, abs: 0, ref: 1e-4 }, opts || {}) }
+function precUnit(i) {
+  if (i.sci) { const m = Math.abs(i.exp) > 1e-14 ? Math.abs(i.exp) : i.ref; return Math.pow(10, Math.floor(Math.log10(m)) - i.dec) }
+  return Math.pow(10, -i.dec)
+}
+function precTol(i) { return Math.max(i.dec === 0 && !i.sci ? 1e-6 : precUnit(i) * 1.0000001, i.abs || 0) }
+function entryDecimals(str) {   // effective number of decimal places the student typed
+  const m = String(str).trim().replace(/,/g, '').replace(/^[+-]/, '')
+  const ei = m.search(/e/i), mant = ei >= 0 ? m.slice(0, ei) : m, ex = ei >= 0 ? parseInt(m.slice(ei + 1), 10) || 0 : 0
+  const dp = mant.indexOf('.'), d = dp < 0 ? 0 : mant.length - dp - 1
+  return d - ex
+}
+function entrySigDigits(str) {
+  const m = String(str).trim().replace(/,/g, '').replace(/^[+-]/, '')
+  const ei = m.search(/e/i), mant = ei >= 0 ? m.slice(0, ei) : m
+  return mant.replace('.', '').replace(/^0+/, '').length
+}
+function precisionOK(i, str) {
+  if (i.sci) return Math.abs(i.exp) < 1e-14 || entrySigDigits(str) >= i.dec
+  return entryDecimals(str) >= i.dec
+}
+// diagMatch: true when the student's entries for `keys` all match an ALTERNATIVE answer set `alt` (the result of a classic mistake)
+// to the same precision rule, and that alternative genuinely differs from the correct answer for at least one of those keys.
+function diagMatch(def, vals, alt, keys) {
+  let differs = false
+  for (const k of keys) {
+    const i = def.inputs.find(x => x.k === k), v = vals[k]
+    if (!i || isNaN(v) || alt[k] === undefined || isNaN(alt[k])) return false
+    if (Math.abs(v - alt[k]) > precTol(Object.assign({}, i, { exp: alt[k] }))) return false
+    if (Math.abs(alt[k] - i.exp) > precTol(i)) differs = true
+  }
+  return differs
+}
+function revealValue(i) {
+  const s = i.sci ? Number(i.exp).toExponential(i.dec) : Number(i.exp).toFixed(i.dec)
+  return /^-0(\.0*)?$/.test(s) ? s.slice(1) : s
+}
+function precLabel(i) {
+  if (i.sci) return 'sci. notation, at least ' + i.dec + ' significant digits in the mantissa (e.g. ' + (2.5e-4).toExponential(i.dec).replace('e+', 'e') + ')'
+  return i.dec === 0 ? 'integer' : i.dec + (i.dec === 1 ? ' decimal place' : ' decimal places')
+}
+
+// ═══════════════════════════════════════════
+//  SVG HELPERS
+// ═══════════════════════════════════════════
+const TXT = 'font-family="Times New Roman" font-style="italic"'
+function arrowDefs(id) { return `<defs><marker id="${id}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 Z" fill="#000"/></marker></defs>` }
+function fitter(pts, W, H, m) {
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1])
+  const minx = Math.min(...xs), maxx = Math.max(...xs), miny = Math.min(...ys), maxy = Math.max(...ys)
+  const s = Math.min((W - 2 * m) / Math.max(maxx - minx, 1e-9), (H - 2 * m) / Math.max(maxy - miny, 1e-9))
+  const ox = (W - s * (maxx - minx)) / 2, oy = (H - s * (maxy - miny)) / 2
+  return { f: (x, y) => [ox + (x - minx) * s, H - oy - (y - miny) * s], s }
+}
+function wrapSvg(W, H, inner) { return `<svg class="diagram" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="max-width:${W}px;width:100%;background:#fff;border:1px solid #e3e8ee;border-radius:6px">${inner}</svg>` }
+
+function drawCST(el, xy, P) {
+  const W = 460, H = 330, fit = fitter(xy.concat([P]), W, H, 60)
+  const q = xy.map(p => fit.f(p[0], p[1])), qp = fit.f(P[0], P[1])
+  const cx = (q[0][0] + q[1][0] + q[2][0]) / 3, cy = (q[0][1] + q[1][1] + q[2][1]) / 3
+  let s = arrowDefs('cst-ah')
+  s += `<polygon points="${q.map(p => p.join(',')).join(' ')}" fill="#eaf4fc" stroke="#000" stroke-width="2.4"/>`
+  q.forEach(p => { s += `<line x1="${p[0]}" y1="${p[1]}" x2="${qp[0]}" y2="${qp[1]}" stroke="#7a8b99" stroke-width="1" stroke-dasharray="4,3"/>` })
+  q.forEach((p, i) => {
+    const dx = p[0] - cx, dy = p[1] - cy, n = Math.hypot(dx, dy) || 1
+    s += `<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="#fff" stroke="#000" stroke-width="2"/>`
+    s += `<text x="${p[0] + dx / n * 22 - 5}" y="${p[1] + dy / n * 22 + 5}" font-size="18" font-family="Times New Roman" font-weight="bold">${i + 1}</text>`
+    s += `<text x="${p[0] + dx / n * 22 - 28}" y="${p[1] + dy / n * 22 + 22}" font-size="12" font-family="Times New Roman">(${xy[i][0]}, ${xy[i][1]})</text>`
+  })
+  s += `<circle cx="${qp[0]}" cy="${qp[1]}" r="4" fill="#c0392b"/><text x="${qp[0] + 7}" y="${qp[1] - 6}" font-size="16" ${TXT} fill="#c0392b">P</text>`
+  s += `<line x1="14" y1="${H - 14}" x2="56" y2="${H - 14}" stroke="#000" marker-end="url(#cst-ah)"/><line x1="14" y1="${H - 14}" x2="14" y2="${H - 56}" stroke="#000" marker-end="url(#cst-ah)"/>`
+  s += `<text x="60" y="${H - 10}" font-size="14" ${TXT}>x</text><text x="8" y="${H - 60}" font-size="14" ${TXT}>y</text>`
+  document.getElementById(el).innerHTML = wrapSvg(W, H, s)
+}
+
+function drawBracket(el, w, h, P) {
+  const W = 460, H = 360
+  // Plot region for the rectangle is (W-140) x (H-150); it is centred inside that region by fitter().
+  // Offsets are explicit: 70 px left/right margin (node labels, pin, 'h' label) and 80 px above
+  // (load arrows + 'P' labels) / 70 px below (pin/roller symbols + 'w' label).
+  const ox = 70, oy = 80
+  const fit = fitter([[0, 0], [w, h]], W - 2 * ox, H - oy - 70, 0)
+  const f = (x, y) => { const p = fit.f(x, y); return [p[0] + ox, p[1] + oy] }
+  const n1 = f(0, 0), n2 = f(w, 0), n3 = f(0, h), n4 = f(w, h)
+  let s = arrowDefs('br-ah')
+  s += `<polygon points="${[n1, n2, n4, n3].map(p => p.join(',')).join(' ')}" fill="#eaf4fc" stroke="#000" stroke-width="2.4"/>`
+  s += `<line x1="${n2[0]}" y1="${n2[1]}" x2="${n3[0]}" y2="${n3[1]}" stroke="#000" stroke-width="1.8"/>`
+  const lab = (p, t, dx, dy) => `<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="#fff" stroke="#000" stroke-width="2"/><text x="${p[0] + dx}" y="${p[1] + dy}" font-size="18" font-family="Times New Roman" font-weight="bold">${t}</text>`
+  s += lab(n1, '1', -22, 22) + lab(n2, '2', 10, 22) + lab(n3, '3', -22, -4) + lab(n4, '4', 10, -4)
+  const mid = (a, b, c) => [(a[0] + b[0] + c[0]) / 3, (a[1] + b[1] + c[1]) / 3]
+  const c1 = mid(n1, n2, n3), c2 = mid(n2, n4, n3)
+  // Element labels: start at each triangle's centroid and step 10 px along the unit normal of the 2-3 diagonal,
+  // on the side of the centroid (i.e. into the triangle, away from the diagonal and from the node labels).
+  const dgx = n3[0] - n2[0], dgy = n3[1] - n2[1], dgl = Math.hypot(dgx, dgy), dm = [(n2[0] + n3[0]) / 2, (n2[1] + n3[1]) / 2]
+  const labelPos = c => { let nx = -dgy / dgl, ny = dgx / dgl; if ((c[0] - dm[0]) * nx + (c[1] - dm[1]) * ny < 0) { nx = -nx; ny = -ny } return [c[0] + 10 * nx, c[1] + 10 * ny + 5] }   // +5 px drops the baseline so the 15 px label is vertically centred on that point
+  const l1 = labelPos(c1), l2 = labelPos(c2)
+  s += `<text x="${l1[0]}" y="${l1[1]}" text-anchor="middle" font-size="15" font-family="Times New Roman">E1</text><text x="${l2[0]}" y="${l2[1]}" text-anchor="middle" font-size="15" font-family="Times New Roman">E2</text>`
+  ;[n3, n4].forEach(p => { s += `<line x1="${p[0]}" y1="${p[1] - 8}" x2="${p[0]}" y2="${p[1] - 52}" stroke="#c0392b" stroke-width="2.4" marker-end="url(#br-ah)"/><text x="${p[0] + 8}" y="${p[1] - 36}" font-size="16" ${TXT} fill="#c0392b">P</text>` })
+  // pin at node 1
+  s += `<polygon points="${n1[0]},${n1[1] + 5} ${n1[0] - 13},${n1[1] + 26} ${n1[0] + 13},${n1[1] + 26}" fill="#fff" stroke="#000" stroke-width="1.8"/>`
+  s += `<line x1="${n1[0] - 20}" y1="${n1[1] + 26}" x2="${n1[0] + 20}" y2="${n1[1] + 26}" stroke="#000" stroke-width="1.8"/>`
+  // roller at node 2
+  s += `<circle cx="${n2[0]}" cy="${n2[1] + 14}" r="8" fill="#fff" stroke="#000" stroke-width="1.8"/><line x1="${n2[0] - 20}" y1="${n2[1] + 26}" x2="${n2[0] + 20}" y2="${n2[1] + 26}" stroke="#000" stroke-width="1.8"/>`
+  s += `<text x="${(n1[0] + n2[0]) / 2 - 8}" y="${n1[1] + 52}" font-size="15" ${TXT}>w</text><text x="${n2[0] + 22}" y="${(n2[1] + n4[1]) / 2}" font-size="15" ${TXT}>h</text>`
+  document.getElementById(el).innerHTML = wrapSvg(W, H, s)
+}
+
+function drawQ4(el, g) {
+  const W = 460, H = 330, fit = fitter([[g.x1, g.y1], [g.x2, g.y4]], W - 140, H - 130, 0)
+  // Plot region is (W-140) x (H-130), centred by fitter(); the offsets leave: 70 px left/right (node labels 1,4 / 2,3 and the
+  // 2b dimension line on the right), 75 px above (traction arrows and the 'p' label) and 55 px below (node labels, the 2a dimension line and its label).
+  const f = (x, y) => { const p = fit.f(x, y); return [p[0] + 70, p[1] + 75] }
+  const n1 = f(g.x1, g.y1), n2 = f(g.x2, g.y1), n3 = f(g.x2, g.y4), n4 = f(g.x1, g.y4)
+  const cx = (n1[0] + n2[0]) / 2, cy = (n1[1] + n4[1]) / 2, sx = (n2[0] - n1[0]) / (2 * g.a), sy = (n1[1] - n4[1]) / (2 * g.b)
+  let s = arrowDefs('q4-ah')
+  s += `<polygon points="${[n1, n2, n3, n4].map(p => p.join(',')).join(' ')}" fill="#eaf4fc" stroke="#000" stroke-width="2.4"/>`
+  const lab = (p, t, dx, dy) => `<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="#fff" stroke="#000" stroke-width="2"/><text x="${p[0] + dx}" y="${p[1] + dy}" font-size="18" font-family="Times New Roman" font-weight="bold">${t}</text>`
+  s += lab(n1, '1', -22, 20) + lab(n2, '2', 10, 20) + lab(n3, '3', 10, -6) + lab(n4, '4', -22, -6)
+  s += `<line x1="${cx - 40}" y1="${cy}" x2="${cx + 60}" y2="${cy}" stroke="#555" stroke-dasharray="6,3" marker-end="url(#q4-ah)"/><line x1="${cx}" y1="${cy + 40}" x2="${cx}" y2="${cy - 60}" stroke="#555" stroke-dasharray="6,3" marker-end="url(#q4-ah)"/>`
+  s += `<text x="${cx + 62}" y="${cy + 16}" font-size="15" ${TXT}>x\u2032</text><text x="${cx + 6}" y="${cy - 62}" font-size="15" ${TXT}>y\u2032</text>`
+  const qx = cx + g.xp * sx, qy = cy - g.yp * sy
+  s += `<circle cx="${qx}" cy="${qy}" r="4" fill="#c0392b"/><text x="${qx + 7}" y="${qy - 6}" font-size="16" ${TXT} fill="#c0392b">Q</text>`
+  for (let i = 0; i < 5; i++) { const x = n4[0] + (n3[0] - n4[0]) * (i + 0.5) / 5; s += `<line x1="${x}" y1="${n4[1] - 4}" x2="${x}" y2="${n4[1] - 36}" stroke="#c0392b" stroke-width="1.8" marker-end="url(#q4-ah)"/>` }
+  s += `<text x="${(n3[0] + n4[0]) / 2 - 6}" y="${n4[1] - 42}" font-size="16" ${TXT} fill="#c0392b">p</text>`
+  s += `<line x1="${n1[0]}" y1="${n1[1] + 34}" x2="${n2[0]}" y2="${n1[1] + 34}" stroke="#000" stroke-width="1"/><text x="${cx - 12}" y="${n1[1] + 50}" font-size="15" ${TXT}>2a</text>`
+  s += `<line x1="${n2[0] + 38}" y1="${n2[1]}" x2="${n2[0] + 38}" y2="${n3[1]}" stroke="#000" stroke-width="1"/><text x="${n2[0] + 44}" y="${cy + 5}" font-size="15" ${TXT}>2b</text>`
+  document.getElementById(el).innerHTML = wrapSvg(W, H, s)
+}
+
+// ---------- PHYSICS (answer-key engine) ----------
+function Dps(E, nu) { const c = E / (1 - nu * nu); return [[c, c * nu, 0], [c * nu, c, 0], [0, 0, c * (1 - nu) / 2]] }
+function Dpe(E, nu) { const c = E / ((1 + nu) * (1 - 2 * nu)); return [[c * (1 - nu), c * nu, 0], [c * nu, c * (1 - nu), 0], [0, 0, c * (1 - 2 * nu) / 2]] }
+function zeros(r, c) { return Array.from({ length: r }, () => new Array(c).fill(0)) }
+function T(M) { return M[0].map((_, j) => M.map(r => r[j])) }
+function mm(A, B) {
+  const n = A.length, m = B[0].length, k = B.length, C = zeros(n, m)
+  for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) { let s = 0; for (let l = 0; l < k; l++) s += A[i][l] * B[l][j]; C[i][j] = s }
+  return C
+}
+function mv(A, v) { return A.map(r => r.reduce((s, a, j) => s + a * v[j], 0)) }
+function scale(A, s) { return A.map(r => r.map(x => x * s)) }
+function addTo(A, B) { for (let i = 0; i < A.length; i++) for (let j = 0; j < A[0].length; j++) A[i][j] += B[i][j] }
+function solveLin(A, b) {
+  const n = b.length, M = A.map((r, i) => r.concat([b[i]]))
+  for (let i = 0; i < n; i++) {
+    let p = i; for (let r = i + 1; r < n; r++) if (Math.abs(M[r][i]) > Math.abs(M[p][i])) p = r
+    ;[M[i], M[p]] = [M[p], M[i]]
+    for (let r = i + 1; r < n; r++) { const f = M[r][i] / M[i][i]; for (let c = i; c <= n; c++) M[r][c] -= f * M[i][c] }
+  }
+  const x = new Array(n).fill(0)
+  for (let i = n - 1; i >= 0; i--) { let s = M[i][n]; for (let j = i + 1; j < n; j++) s -= M[i][j] * x[j]; x[i] = s / M[i][i] }
+  return x
+}
+// CST: xy = [[x1,y1],[x2,y2],[x3,y3]] (counter-clockwise)
+function cstGeom(xy) {
+  const [[x1, y1], [x2, y2], [x3, y3]] = xy
+  const twoA = (x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1)
+  const A = twoA / 2
+  const a = [x2 * y3 - x3 * y2, x3 * y1 - x1 * y3, x1 * y2 - x2 * y1]
+  const b = [y2 - y3, y3 - y1, y1 - y2]
+  const c = [x3 - x2, x1 - x3, x2 - x1]
+  const B = [[b[0], 0, b[1], 0, b[2], 0], [0, c[0], 0, c[1], 0, c[2]], [c[0], b[0], c[1], b[1], c[2], b[2]]].map(r => r.map(v => v / twoA))
+  return { A, twoA, a, b, c, B }
+}
+function cstK(xy, D, t) { const g = cstGeom(xy); return scale(mm(mm(T(g.B), D), g.B), t * g.A) }
+// Bilinear rectangle, centroid-based local coordinates (x',y'), half-sides a,b
+function q4B(a, b, x, y) {
+  return [
+    [y - b, 0, b - y, 0, y + b, 0, -(y + b), 0],
+    [0, x - a, 0, -(x + a), 0, x + a, 0, a - x],
+    [x - a, y - b, -(x + a), b - y, x + a, y + b, a - x, -(y + b)]
+  ].map(r => r.map(v => v / (4 * a * b)))
+}
+function q4N(a, b, x, y) {
+  const d = 4 * a * b
+  return [(a - x) * (b - y) / d, (x + a) * (b - y) / d, (x + a) * (y + b) / d, (a - x) * (y + b) / d]
+}
+function q4K(a, b, D, t, rule) {
+  const K = zeros(8, 8)
+  const pts = rule === 1 ? [[0, 0, 4]] : (() => { const g = 1 / Math.sqrt(3); return [[-a * g, -b * g, 1], [a * g, -b * g, 1], [a * g, b * g, 1], [-a * g, b * g, 1]] })()
+  pts.forEach(([x, y, w]) => { const B = q4B(a, b, x, y); addTo(K, scale(mm(mm(T(B), D), B), t * a * b * w)) })
+  return K
+}
+// Two-CST bracket: nodes 1(0,0) 2(w,0) 3(0,h) 4(w,h); E1=(1,2,3), E2=(2,4,3)
+function bracket(w, h, D, t, P) {
+  const xy1 = [[0, 0], [w, 0], [0, h]], xy2 = [[w, 0], [w, h], [0, h]]
+  const K1 = cstK(xy1, D, t), K2 = cstK(xy2, D, t)
+  const map1 = [0, 1, 2, 3, 4, 5], map2 = [2, 3, 6, 7, 4, 5]
+  const K = zeros(8, 8)
+  ;[[K1, map1], [K2, map2]].forEach(([Ke, m]) => { for (let i = 0; i < 6; i++) for (let j = 0; j < 6; j++) K[m[i]][m[j]] += Ke[i][j] })
+  const F = [0, 0, 0, 0, 0, P, 0, P]
+  const free = [2, 4, 5, 6, 7], pres = [0, 1, 3]
+  const Kff = free.map(i => free.map(j => K[i][j]))
+  const uf = solveLin(Kff, free.map(i => F[i]))
+  const u = new Array(8).fill(0); free.forEach((d, k) => { u[d] = uf[k] })
+  const R = pres.map(i => K[i].reduce((s, kij, j) => s + kij * u[j], 0))
+  const ue1 = map1.map(i => u[i]), ue2 = map2.map(i => u[i])
+  const g1 = cstGeom(xy1), g2 = cstGeom(xy2)
+  return { K1, K2, K, u, R, eps1: mv(g1.B, ue1), eps2: mv(g2.B, ue2), sig1: mv(D, mv(g1.B, ue1)), sig2: mv(D, mv(g2.B, ue2)), A1: g1.A, A2: g2.A }
+}
+
+// ═══════════════════════════════════════════
+//  PROBLEM 1: REVIEW  (D matrices, equivalent properties, Gauss quadrature)
+// ═══════════════════════════════════════════
+;(function () {
+  const eng = createEngine('p1', {
+    tabs: { dps: 2, dpe: 2, eq: 2, gauss: 2 },
+    groups: { dps: ['dps'], dpe: ['dpe'], eq: ['eq'], gauss: ['gauss'] },
+    groupTab: { dps: 'dps', dpe: 'dpe', eq: 'eq', gauss: 'gauss' },
+    report: t => { if (window.reportP1Total) window.reportP1Total(t) }
+  })
+  const Es = [3000, 4500, 10000, 12000, 29000, 30000], nus = [0.2, 0.25, 0.3, 0.35]
+  let E1 = choice(Es), n1 = choice(nus), E2 = choice(Es), n2 = choice(nus), E3 = choice(Es), n3 = choice(nus)
+  const ga = choice([1, 1.5, 2, 2.5, 3]), gp = randInt(1, 6), gq = randInt(1, 9)
+  const Dp = Dps(E1, n1), De = Dpe(E2, n2)
+  const Estar = E3 / (1 - n3 * n3), nstar = n3 / (1 - n3)
+  const exactI = 2 * gp * Math.pow(ga, 3) / 3 + 2 * gq * ga
+  bind('p1_E1', E1.toLocaleString()); bind('p1_n1', n1)
+  bind('p1_E2', E2.toLocaleString()); bind('p1_n2', n2)
+  bind('p1_E3', E3.toLocaleString()); bind('p1_n3', n3)
+  bind('p1_ga', ga); bind('p1_gp', gp); bind('p1_gq', gq)
+  const S = {
+    dps: { points: 2, inputs: [inp('d11', Dp[0][0], 2), inp('d12', Dp[0][1], 2), inp('d33', Dp[2][2], 2)] },
+    dpe: { points: 2, inputs: [inp('d11', De[0][0], 2), inp('d12', De[0][1], 2), inp('d33', De[2][2], 2)] },
+    eq: { points: 2, inputs: [inp('Es', Estar, 2), inp('ns', nstar, 4)] },
+    gauss: { points: 2, inputs: [inp('xg', ga / Math.sqrt(3), 4), inp('I', exactI, 3)] }
+  }
+  S.dps.csv = csvMat(3, 3, { d11: [0, 0], d12: [0, 1], d33: [2, 2] })
+  S.dpe.csv = csvMat(3, 3, { d11: [0, 0], d12: [0, 1], d33: [2, 2] })
+  S.eq.csv = csvVec({ 2: { Es: 0, ns: 1 } })
+  S.gauss.csv = csvVec({ 2: { xg: 0, I: 1 } })
+  eng.setSteps(S)
+})()
+
+// ═══════════════════════════════════════════
+//  PROBLEM 2: CONSTANT STRAIN TRIANGLE  (single element + two-CST bracket)
+// ═══════════════════════════════════════════
+;(function () {
+  const eng = createEngine('p2', {
+    tabs: { cst: 28 },
+    groups: { M: ['M1'], A: ['A1', 'A2', 'A3', 'A4', 'A5'], B: ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7'], C: ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7'] },
+    groupTab: { M: 'cst', A: 'cst', B: 'cst', C: 'cst' },
+    report: t => { if (window.reportP2Total) window.reportP2Total(t) }
+  })
+  // ---- random instance ----
+  let x1, y1, x2, y2, x3, y3, tw
+  do {
+    x1 = randInt(-2, 2); y1 = randInt(-2, 2)
+    x2 = x1 + randInt(3, 6); y2 = y1 + randInt(-1, 1)
+    x3 = x1 + randInt(-1, 3); y3 = y1 + randInt(3, 6)
+    tw = (x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1)
+  } while (tw <= 0)
+  const xy = [[x1, y1], [x2, y2], [x3, y3]]
+  const E = choice([10000, 12000, 29000, 30000]), nu = choice([0.2, 0.25, 0.3, 0.35]), t = choice([0.5, 0.75, 1, 1.25, 2])
+  let w1, w2, w3
+  do { w1 = randInt(2, 6); w2 = randInt(2, 6); w3 = 10 - w1 - w2 } while (w3 < 2)
+  const px = parseFloat(((w1 * x1 + w2 * x2 + w3 * x3) / 10).toFixed(2)), py = parseFloat(((w1 * y1 + w2 * y2 + w3 * y3) / 10).toFixed(2))
+  let ue
+  do { ue = Array.from({ length: 6 }, () => randInt(-10, 10) / 10000) } while (ue.every(v => v === 0))
+  const bw = choice([2, 3, 4]), bh = choice([3, 4, 5, 6]), bP = choice([5, 8, 10, 12, 15])
+
+  // ---- answer key ----
+  const D = Dps(E, nu), g = cstGeom(xy)
+  const Nv = [0, 1, 2].map(i => (g.a[i] + g.b[i] * px + g.c[i] * py) / g.twoA)
+  const upt = Nv[0] * ue[0] + Nv[1] * ue[2] + Nv[2] * ue[4], vpt = Nv[0] * ue[1] + Nv[1] * ue[3] + Nv[2] * ue[5]
+  const eps = mv(g.B, ue), sig = mv(D, eps), K = cstK(xy, D, t), f = mv(K, ue)
+  const br = bracket(bw, bh, D, t, bP)
+  const R = [br.R[0], br.R[1], br.R[2]]
+
+  // ---- displays ----
+  bind('p2_E', E.toLocaleString()); bind('p2_nu', nu); bind('p2_t', t)
+  ;[['x1', x1], ['y1', y1], ['x2', x2], ['y2', y2], ['x3', x3], ['y3', y3], ['px', px], ['py', py]].forEach(([k, v]) => bind('p2_' + k, v))
+  ;['u1', 'v1', 'u2', 'v2', 'u3', 'v3'].forEach((k, i) => bind('p2_' + k, ue[i].toFixed(4)))
+  bind('p2_bw', bw); bind('p2_bh', bh); bind('p2_bP', bP)
+  drawCST('p2-fig-cst', xy, [px, py]); drawBracket('p2-fig-bracket', bw, bh, bP)
+
+  const epsRef = Math.max.apply(null, eps.map(Math.abs)), sci = r => ({ sci: true, ref: r })
+  const S = {
+    M1: { points: 2, inputs: [inp('d11', D[0][0], 2), inp('d12', D[0][1], 2), inp('d33', D[2][2], 2)] },
+    A1: { points: 1, inputs: [inp('A', g.A, 3)] },
+    A2: { points: 1, inputs: g.b.map((v, i) => inp('b' + (i + 1), v, 0)) },
+    A3: { points: 1, inputs: g.c.map((v, i) => inp('c' + (i + 1), v, 0)) },
+    A4: { points: 1, inputs: Nv.map((v, i) => inp('N' + (i + 1), v, 4)) },
+    A5: { points: 1, inputs: [inp('u', upt, 3, sci(1e-4)), inp('v', vpt, 3, sci(1e-4))] },
+    B1: { points: 1, inputs: [inp('B11', g.B[0][0], 4), inp('B24', g.B[1][3], 4), inp('B35', g.B[2][4], 4)] },
+    B2: { points: 2, inputs: [inp('ex', eps[0], 3, sci(epsRef)), inp('ey', eps[1], 3, sci(epsRef)), inp('gxy', eps[2], 3, sci(epsRef))] },
+    B3: { points: 2, inputs: [inp('sx', sig[0], 2), inp('sy', sig[1], 2), inp('txy', sig[2], 2)] },
+    B4: { points: 2, inputs: [inp('K11', K[0][0], 1), inp('K12', K[0][1], 1), inp('K22', K[1][1], 1)] },
+    B5: { points: 1, inputs: [inp('K13', K[0][2], 1), inp('K26', K[1][5], 1)] },
+    B6: { points: 2, inputs: ['f1x', 'f1y', 'f2x', 'f2y', 'f3x', 'f3y'].map((k, i) => inp(k, f[i], 2)) },
+    B7: { points: 1, inputs: [inp('sFx', 0, 2, { abs: absScale(f, 5e-3, 5e-3) }), inp('sFy', 0, 2, { abs: absScale(f, 5e-3, 5e-3) })] },
+    C1: { points: 1, inputs: [inp('A1', br.A1, 3), inp('A2', br.A2, 3)] },
+    C2: { points: 1, inputs: [inp('K11', br.K1[0][0], 1), inp('K33', br.K1[2][2], 1)] },
+    C3: { points: 1, inputs: [inp('dof', 7, 0), inp('Kg33', br.K[2][2], 1)] },
+    C4: { points: 1, inputs: [inp('nf', 5, 0)] },
+    C5: { points: 2, inputs: [inp('u2', br.u[2], 3, sci(1e-3)), inp('v3', br.u[5], 3, sci(1e-3)), inp('u4', br.u[6], 3, sci(1e-3))] },
+    C6: { points: 2, inputs: [inp('sx', br.sig2[0], 2), inp('sy', br.sig2[1], 2), inp('txy', br.sig2[2], 2)] },
+    C7: { points: 2, inputs: [inp('R1x', R[0], 2), inp('R1y', R[1], 2), inp('R2y', R[2], 2)] }
+  }
+  S.M1.csv = csvMat(3, 3, { d11: [0, 0], d12: [0, 1], d33: [2, 2] })
+  S.A2.csv = csvVec({ 3: { b1: 0, b2: 1, b3: 2 } })
+  S.A3.csv = csvVec({ 3: { c1: 0, c2: 1, c3: 2 } })
+  S.A4.csv = csvVec({ 3: { N1: 0, N2: 1, N3: 2 } })
+  S.A5.csv = csvVec({ 2: { u: 0, v: 1 } })
+  S.B1.csv = csvMat(3, 6, { B11: [0, 0], B24: [1, 3], B35: [2, 4] })
+  S.B2.csv = csvVec({ 3: { ex: 0, ey: 1, gxy: 2 } })
+  S.B3.csv = csvVec({ 3: { sx: 0, sy: 1, txy: 2 } })
+  S.B4.csv = csvMat(6, 6, { K11: [0, 0], K12: [0, 1], K22: [1, 1] })
+  S.B5.csv = csvMat(6, 6, { K13: [0, 2], K26: [1, 5] })
+  S.B6.csv = csvVec({ 6: { f1x: 0, f1y: 1, f2x: 2, f2y: 3, f3x: 4, f3y: 5 } })
+  S.B7.csv = csvVec({ 2: { sFx: 0, sFy: 1 } })
+  S.C2.csv = csvMat(6, 6, { K11: [0, 0], K33: [2, 2] })
+  S.C5.csv = csvVec({ 5: { u2: 0, v3: 2, u4: 3 }, 8: { u2: 2, v3: 5, u4: 6 } })
+  S.C6.csv = csvVec({ 3: { sx: 0, sy: 1, txy: 2 } })
+  S.C7.csv = csvVec({ 3: { R1x: 0, R1y: 1, R2y: 2 } })
+  // ---- classic-mistake diagnostics: add a specific message to a FAILED step only; they never touch scoring ----
+  const dg = (id, list) => { S[id].diagnose = v => { for (const [alt, keys, msg] of list) if (diagMatch(S[id], v, alt, keys)) return msg; return '' } }
+  const fromArr = (keys, arr) => Object.fromEntries(keys.map((k, i) => [k, arr[i]]))
+  const NEG = 'A came out negative. Check that nodes 1\u21922\u21923 are numbered counter-clockwise.'
+  const FLIP = 'Every sign is reversed, which is what a clockwise node order (negative A) produces. Check that nodes 1\u21922\u21923 are numbered counter-clockwise.'
+  const WRONGD = 'Confirm you built the plane-stress [D] for this problem \u2014 your values match the plane-strain matrix.'
+  const THICK = 'Check whether thickness t was included in [K^e] = t A [B]^T [D] [B] (or the equivalent Gauss sum).'
+  const THICKF = 'Check whether thickness t was included: {f^e} = [K^e]{u^e}, and [K^e] carries the factor t.'
+  const Dx = Dpe(E, nu), Kx = cstK(xy, Dx, t), fx = mv(Kx, ue), sigx = mv(Dx, eps), brx = bracket(bw, bh, Dx, t, bP)
+  const dKeys = ['d11', 'd12', 'd33'], sKeys = ['sx', 'sy', 'txy'], fKeys = ['f1x', 'f1y', 'f2x', 'f2y', 'f3x', 'f3y']
+  dg('A1', [[{ A: -g.A }, ['A'], NEG]])
+  dg('A2', [[fromArr(['b1', 'b2', 'b3'], g.b.map(v => -v)), ['b1', 'b2', 'b3'], FLIP]])
+  dg('A3', [[fromArr(['c1', 'c2', 'c3'], g.c.map(v => -v)), ['c1', 'c2', 'c3'], FLIP]])
+  dg('B1', [[{ B11: -g.B[0][0], B24: -g.B[1][3], B35: -g.B[2][4] }, ['B11', 'B24', 'B35'], FLIP]])
+  dg('M1', [[{ d11: Dx[0][0], d12: Dx[0][1], d33: Dx[2][2] }, dKeys, WRONGD]])
+  dg('B3', [[fromArr(sKeys, sigx), sKeys, WRONGD]])
+  dg('B4', [[{ K11: K[0][0] / t, K12: K[0][1] / t, K22: K[1][1] / t }, ['K11', 'K12', 'K22'], THICK], [{ K11: Kx[0][0], K12: Kx[0][1], K22: Kx[1][1] }, ['K11', 'K12', 'K22'], WRONGD]])
+  dg('B5', [[{ K13: K[0][2] / t, K26: K[1][5] / t }, ['K13', 'K26'], THICK], [{ K13: Kx[0][2], K26: Kx[1][5] }, ['K13', 'K26'], WRONGD]])
+  dg('B6', [[fromArr(fKeys, f.map(v => v / t)), fKeys, THICKF], [fromArr(fKeys, fx), fKeys, WRONGD]])
+  dg('C2', [[{ K11: br.K1[0][0] / t, K33: br.K1[2][2] / t }, ['K11', 'K33'], THICK], [{ K11: brx.K1[0][0], K33: brx.K1[2][2] }, ['K11', 'K33'], WRONGD]])
+  dg('C3', [[{ Kg33: br.K[2][2] / t }, ['Kg33'], THICK], [{ Kg33: brx.K[2][2] }, ['Kg33'], WRONGD]])
+  dg('C5', [[{ u2: br.u[2] * t, v3: br.u[5] * t, u4: br.u[6] * t }, ['u2', 'v3', 'u4'], THICK], [{ u2: brx.u[2], v3: brx.u[5], u4: brx.u[6] }, ['u2', 'v3', 'u4'], WRONGD]])
+  dg('C6', [[fromArr(sKeys, br.sig2.map(v => v * t)), sKeys, THICK]])   // (stresses of this statically determinate bracket do not depend on [D])
+  eng.setSteps(S)
+  if (DEBUG_MODE) window.__p2key = { K, f, eps, sig, br }   // instructor mode only (iGrade = 1)
+})()
+
+// ═══════════════════════════════════════════
+//  PROBLEM 3: BILINEAR RECTANGULAR ELEMENT (plane strain)
+// ═══════════════════════════════════════════
+;(function () {
+  const eng = createEngine('p3', {
+    tabs: { q4: 24 },
+    groups: { P: ['P1', 'P2'], S: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'], K: ['K1', 'K2', 'K3', 'K4', 'K5', 'K6'], L: ['L1', 'L2'] },
+    groupTab: { P: 'q4', S: 'q4', K: 'q4', L: 'q4' },
+    report: t => { if (window.reportP3Total) window.reportP3Total(t) }
+  })
+  let a, b
+  do { a = choice([1, 1.5, 2]); b = choice([1.5, 2, 2.5, 3]) } while (a === b)
+  const x1 = randInt(-2, 2), y1 = randInt(-2, 2), x2 = x1 + 2 * a, y4 = y1 + 2 * b
+  const E = choice([3000, 4000, 10000, 29000]), nu = choice([0.2, 0.25, 0.3, 0.35]), t = choice([0.5, 1, 1.5, 2]), p = choice([2, 3, 4, 5])
+  const xi0 = choice([-0.5, -0.25, 0.25, 0.5]), eta0 = choice([-0.5, -0.25, 0.25, 0.5])
+  const xp = a * xi0, yp = b * eta0
+  let ue
+  do { ue = Array.from({ length: 8 }, () => randInt(-10, 10) / 10000) } while (ue.every(v => v === 0))
+
+  const D = Dpe(E, nu)
+  const Nv = q4N(a, b, xp, yp)
+  const upt = Nv.reduce((s, n, i) => s + n * ue[2 * i], 0), vpt = Nv.reduce((s, n, i) => s + n * ue[2 * i + 1], 0)
+  const epsQ = mv(q4B(a, b, xp, yp), ue), eps0 = mv(q4B(a, b, 0, 0), ue), epsC = mv(q4B(a, b, a, b), ue)
+  const sig0 = mv(D, eps0), sigz = nu * (sig0[0] + sig0[1])
+  const xg = a / Math.sqrt(3), yg = b / Math.sqrt(3), BG = q4B(a, b, -xg, -yg)
+  const K2 = q4K(a, b, D, t, 2), K1 = q4K(a, b, D, t, 1)
+  const Ftop = p * t * a
+  const Ku = mv(K2, ue)
+  const U = 0.5 * ue.reduce((s, v, i) => s + v * Ku[i], 0)
+
+  bind('p3_E', E.toLocaleString()); bind('p3_nu', nu); bind('p3_t', t); bind('p3_p', p)
+  ;[['x1', x1], ['y1', y1], ['x2', x2], ['y4', y4], ['xp', xp], ['yp', yp]].forEach(([k, v]) => bind('p3_' + k, nice(v, 4)))
+  ;['u1', 'v1', 'u2', 'v2', 'u3', 'v3', 'u4', 'v4'].forEach((k, i) => bind('p3_' + k, ue[i].toFixed(4)))
+  bind('p3_a', nice(a, 4)); bind('p3_b', nice(b, 4))
+  drawQ4('p3-fig-q4', { x1, y1, x2, y4, a, b, xp, yp })
+
+  const sci = r => ({ sci: true, ref: r })
+  const rQ = Math.max.apply(null, epsQ.map(Math.abs)), r0 = Math.max.apply(null, eps0.map(Math.abs)), rC = Math.max.apply(null, epsC.map(Math.abs))
+  const S = {
+    P1: { points: 1, inputs: [inp('a', a, 2), inp('b', b, 2)] },
+    P2: { points: 2, inputs: [inp('d11', D[0][0], 2), inp('d12', D[0][1], 2), inp('d33', D[2][2], 2)] },
+    S1: { points: 2, inputs: Nv.map((v, i) => inp('N' + (i + 1), v, 4)) },
+    S2: { points: 1, inputs: [inp('u', upt, 3, sci(1e-4)), inp('v', vpt, 3, sci(1e-4))] },
+    S3: { points: 2, inputs: [inp('ex', epsQ[0], 3, sci(rQ)), inp('ey', epsQ[1], 3, sci(rQ)), inp('gxy', epsQ[2], 3, sci(rQ))] },
+    S4: { points: 2, inputs: [inp('ex', eps0[0], 3, sci(r0)), inp('ey', eps0[1], 3, sci(r0)), inp('gxy', eps0[2], 3, sci(r0))] },
+    S5: { points: 2, inputs: [inp('sx', sig0[0], 2), inp('sy', sig0[1], 2), inp('txy', sig0[2], 2), inp('sz', sigz, 2)] },
+    S6: { points: 2, inputs: [inp('ex', epsC[0], 3, sci(rC)), inp('ey', epsC[1], 3, sci(rC)), inp('gxy', epsC[2], 3, sci(rC))] },
+    K1: { points: 1, inputs: [inp('xg', xg, 4), inp('yg', yg, 4)] },
+    K2: { points: 1, inputs: [inp('B11', BG[0][0], 4), inp('B22', BG[1][1], 4), inp('B35', BG[2][4], 4)] },
+    K3: { points: 2, inputs: [inp('K11', K2[0][0], 1), inp('K12', K2[0][1], 1), inp('K22', K2[1][1], 1)] },
+    K4: { points: 2, inputs: [inp('K15', K2[0][4], 1), inp('K18', K2[0][7], 1)] },
+    K5: { points: 1, inputs: [inp('W', 4, 0), inp('K11', K1[0][0], 1)] },
+    K6: { points: 1, inputs: [inp('zf', 3, 0), inp('zr', 5, 0)] },
+    L1: { points: 1, inputs: [inp('F3y', Ftop, 3), inp('F4y', Ftop, 3)] },
+    L2: { points: 1, inputs: [inp('U', U, 3, sci(U))] }
+  }
+  S.P2.csv = csvMat(3, 3, { d11: [0, 0], d12: [0, 1], d33: [2, 2] })
+  S.S1.csv = csvVec({ 4: { N1: 0, N2: 1, N3: 2, N4: 3 } })
+  S.S2.csv = csvVec({ 2: { u: 0, v: 1 } })
+  ;['S3', 'S4', 'S6'].forEach(id => { S[id].csv = csvVec({ 3: { ex: 0, ey: 1, gxy: 2 } }) })
+  S.S5.csv = csvVec({ 3: { sx: 0, sy: 1, txy: 2 }, 4: { sx: 0, sy: 1, txy: 2, sz: 3 } })
+  S.K1.csv = csvVec({ 2: { xg: 0, yg: 1 } })
+  S.K2.csv = csvMat(3, 8, { B11: [0, 0], B22: [1, 1], B35: [2, 4] })
+  S.K3.csv = csvMat(8, 8, { K11: [0, 0], K12: [0, 1], K22: [1, 1] })
+  S.K4.csv = csvMat(8, 8, { K15: [0, 4], K18: [0, 7] })
+  S.K5.csv = csvMat(8, 8, { K11: [0, 0] })
+  S.L1.csv = csvVec({ 2: { F3y: 0, F4y: 1 } })
+  // ---- classic-mistake diagnostics: add a specific message to a FAILED step only; they never touch scoring ----
+  const dg = (id, list) => { S[id].diagnose = v => { for (const [alt, keys, msg] of list) if (diagMatch(S[id], v, alt, keys)) return msg; return '' } }
+  const fromArr = (keys, arr) => Object.fromEntries(keys.map((k, i) => [k, arr[i]]))
+  const LOCAL = 'Did you evaluate N_i and [B] in local coordinates measured from the element centroid?'
+  const WRONGD = 'Confirm you built the plane-strain [D] for this problem \u2014 your values match the plane-stress matrix.'
+  const THICK = 'Check whether thickness t was included in [K^e] = t A [B]^T [D] [B] (or the equivalent Gauss sum).'
+  const THICKF = 'Check whether thickness t was included: the edge load is {f^e} = \u222b[N]^T{p} t ds.'
+  const Dx = Dps(E, nu), K2x = q4K(a, b, Dx, t, 2), K1x = q4K(a, b, Dx, t, 1), sigx = mv(Dx, eps0)
+  const Kux = mv(K2x, ue), Ux = 0.5 * ue.reduce((s, v, i) => s + v * Kux[i], 0)
+  const cxg = x1 + a, cyg = y1 + b, xQg = cxg + xp, yQg = cyg + yp          // the same points expressed in GLOBAL coordinates
+  const Ng = q4N(a, b, xQg, yQg), epsQg = mv(q4B(a, b, xQg, yQg), ue), eps0g = mv(q4B(a, b, cxg, cyg), ue), epsCg = mv(q4B(a, b, x1 + 2 * a, y1 + 2 * b), ue)
+  const BGg = q4B(a, b, cxg - xg, cyg - yg)
+  const ngKeys = ['N1', 'N2', 'N3', 'N4'], eKeys = ['ex', 'ey', 'gxy']
+  dg('P2', [[{ d11: Dx[0][0], d12: Dx[0][1], d33: Dx[2][2] }, ['d11', 'd12', 'd33'], WRONGD]])
+  dg('S1', [[fromArr(ngKeys, Ng), ngKeys, LOCAL]])
+  dg('S2', [[{ u: Ng.reduce((s, n, i) => s + n * ue[2 * i], 0), v: Ng.reduce((s, n, i) => s + n * ue[2 * i + 1], 0) }, ['u', 'v'], LOCAL]])
+  dg('S3', [[fromArr(eKeys, epsQg), eKeys, LOCAL]])
+  dg('S4', [[fromArr(eKeys, eps0g), eKeys, LOCAL]])
+  dg('S5', [[fromArr(['sx', 'sy', 'txy'], sigx), ['sx', 'sy', 'txy'], WRONGD]])
+  dg('S6', [[fromArr(eKeys, epsCg), eKeys, LOCAL]])
+  dg('K1', [[{ xg: cxg + xg, yg: cyg + yg }, ['xg', 'yg'], LOCAL]])
+  dg('K2', [[{ B11: BGg[0][0], B22: BGg[1][1], B35: BGg[2][4] }, ['B11', 'B22', 'B35'], LOCAL]])
+  dg('K3', [[{ K11: K2[0][0] / t, K12: K2[0][1] / t, K22: K2[1][1] / t }, ['K11', 'K12', 'K22'], THICK], [{ K11: K2x[0][0], K12: K2x[0][1], K22: K2x[1][1] }, ['K11', 'K12', 'K22'], WRONGD]])
+  dg('K4', [[{ K15: K2[0][4] / t, K18: K2[0][7] / t }, ['K15', 'K18'], THICK], [{ K15: K2x[0][4], K18: K2x[0][7] }, ['K15', 'K18'], WRONGD]])
+  dg('K5', [[{ K11: K1[0][0] / t }, ['K11'], THICK], [{ K11: K1x[0][0] }, ['K11'], WRONGD]])
+  dg('L1', [[{ F3y: Ftop / t, F4y: Ftop / t }, ['F3y', 'F4y'], THICKF]])
+  dg('L2', [[{ U: U / t }, ['U'], THICK], [{ U: Ux }, ['U'], WRONGD]])
+  eng.setSteps(S)
+  if (DEBUG_MODE) window.__p3key = { K2, K1, U, Nv, epsQ, eps0, epsC, sig0, sigz, BG }   // instructor mode only (iGrade = 1)
+})()
+
+// ═══════════════════════════════════════════
+//  TAB SWITCHING / SCORE AGGREGATION HOOKS
+// ═══════════════════════════════════════════
+window.p1SwitchTab = function (name) {
+  document.querySelectorAll('.p1-tab-content').forEach(el => el.classList.remove('active'))
+  document.querySelectorAll('#p1-tab-bar button').forEach(el => el.classList.remove('active'))
+  document.getElementById('p1-tab-' + name).classList.add('active')
+  const idx = { dps: 0, dpe: 1, eq: 2, gauss: 3 }[name]
+  document.querySelectorAll('#p1-tab-bar button')[idx].classList.add('active')
+}
+window.p1GetTabScores = () => HW.engines.p1.getTabScores()
+window.p1SetTabScores = s => HW.engines.p1.setTabScores(s)
+window.p2GetTabScores = () => HW.engines.p2.getTabScores()
+window.p2SetTabScores = s => HW.engines.p2.setTabScores(s)
+window.p3GetTabScores = () => HW.engines.p3.getTabScores()
+window.p3SetTabScores = s => HW.engines.p3.setTabScores(s)
+
+</script>
+  </body>
+</html>
